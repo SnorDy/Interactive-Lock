@@ -47,7 +47,7 @@ jobs:
 
       - name: Run Ktlint Check
         working-directory: ${{ env.SAMPLE_PATH }}
-        run: ./gradlew ktlintCheck
+        run: chmod +x ./gradlew ktlintCheck
 
       - name: Build project
         working-directory: ${{ env.SAMPLE_PATH }}
