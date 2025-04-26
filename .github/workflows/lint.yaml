@@ -3,7 +3,7 @@ name: InteractiveLock
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'interactive_lock/**'
   pull_request:
