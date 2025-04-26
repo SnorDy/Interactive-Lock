@@ -31,6 +31,10 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
+      - name: Give execute permission to gradlew
+        working-directory: ${{ env.SAMPLE_PATH }}
+        run: chmod +x ./gradlew
+
       - name: Give execute permission to checksum.sh
         run: chmod +x ./scripts/checksum.sh
 
@@ -45,10 +49,9 @@ jobs:
             ~/.gradle/caches/build-cache-*
           key: gradle-${{ hashFiles('checksum.txt') }}
 
-      - name: Run Ktlint Check with GitHub Action
-        uses: jlleitschuh/ktlint-gradle@v2
-        with:
-          android: true
+      - name: Run Ktlint Check
+        working-directory: ${{ env.SAMPLE_PATH }}
+        run: ./gradlew ktlintCheck
 
       - name: Build project
         working-directory: ${{ env.SAMPLE_PATH }}
