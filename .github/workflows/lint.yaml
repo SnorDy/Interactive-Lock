@@ -45,9 +45,10 @@ jobs:
             ~/.gradle/caches/build-cache-*
           key: gradle-${{ hashFiles('checksum.txt') }}
 
-      - name: Run Ktlint Check
-        working-directory: ${{ env.SAMPLE_PATH }}
-        run: chmod +x ./gradlew ktlintCheck
+      - name: Run Ktlint Check with GitHub Action
+        uses: jlleitschuh/ktlint-gradle@v2
+        with:
+          android: true
 
       - name: Build project
         working-directory: ${{ env.SAMPLE_PATH }}
