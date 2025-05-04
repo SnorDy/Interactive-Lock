@@ -4,19 +4,25 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.SharedPreferences.Editor
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,8 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -52,20 +56,53 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var setPasswordLauncher: ActivityResultLauncher<Intent>
     private lateinit var currentContext: Context
     private lateinit var currentAppModel: AppModel
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: Editor
+    private var isSettingPassword = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
+        editor = sharedPreferences.edit()
         enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    currentAppModel.runApp(packageManager, currentContext, true)
-                    Log.i("MY_LOG", "App is opened")
+                    if (isSettingPassword) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            currentAppModel.runSetLockActivity(
+                                currentContext,
+                                setPasswordLauncher,
+                            )
+                        }
+                        isSettingPassword = false
+                    } else {
+                        currentAppModel.runApp(packageManager, currentContext, true)
+                        Log.i("MY_LOG", "App is opened")
+                    }
                 } else {
                     currentAppModel.runApp(packageManager, currentContext, false)
                     Log.i("MY_LOG", "App opening is CANCELED!")
+                }
+            }
+        setPasswordLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    currentAppModel.setPassword(result.data?.getStringExtra("password") ?: "", editor)
+                    Toast.makeText(
+                        baseContext,
+                        "Password for ${currentAppModel.packageName} is changed",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        baseContext,
+                        "Password for ${currentAppModel.name} is changed",
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 }
             }
         setContent {
@@ -109,6 +146,7 @@ class MainActivity : ComponentActivity() {
                         it.activityInfo.loadLabel(packageManager).toString(),
                         drawableToPainter(it.activityInfo.loadIcon(packageManager)),
                         it.activityInfo.packageName,
+                        sharedPreferences,
                     )
                 }
 
@@ -121,6 +159,7 @@ class MainActivity : ComponentActivity() {
         return BitmapPainter(drawable.toBitmap().asImageBitmap())
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun appListItem(
         app: AppModel,
@@ -137,16 +176,27 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (app.icon != null) {
-                IconButton(
-                    onClick = {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            currentAppModel = app
-                            currentContext = context
-                            app.runBlockForResult(context, activityResultLauncher)
-                        }
-                    },
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
+                Box(
+                    modifier =
+                        Modifier
+                            .combinedClickable(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        currentAppModel = app
+                                        currentContext = context
+                                        app.runBlockForResult(context, activityResultLauncher)
+                                    }
+                                },
+                                onLongClick = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        currentAppModel = app
+                                        currentContext = context
+                                        isSettingPassword = true
+                                        app.runBlockForResult(context, activityResultLauncher)
+                                    }
+                                },
+                            )
+                            .size(48.dp),
                 ) {
                     Image(
                         painter = app.icon,
@@ -155,19 +205,27 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             } else {
-                IconButton(
-                    onClick = {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            currentAppModel = app
-                            currentContext = context
-                            app.runBlockForResult(context, activityResultLauncher)
-                        }
-                    },
-                    modifier = Modifier.size(48.dp),
-                    colors =
-                        IconButtonDefaults.iconButtonColors(
-                            containerColor = Color.Transparent,
-                        ),
+                Box(
+                    modifier =
+                        Modifier
+                            .combinedClickable(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        currentAppModel = app
+                                        currentContext = context
+                                        app.runBlockForResult(context, activityResultLauncher)
+                                    }
+                                },
+                                onLongClick = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        currentAppModel = app
+                                        currentContext = context
+                                        isSettingPassword = true
+                                        app.runBlockForResult(context, activityResultLauncher)
+                                    }
+                                },
+                            )
+                            .size(48.dp),
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),

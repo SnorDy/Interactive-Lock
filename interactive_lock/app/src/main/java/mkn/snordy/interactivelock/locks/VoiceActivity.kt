@@ -1,4 +1,4 @@
-package mkn.snordy.interactivelock
+package mkn.snordy.interactivelock.locks
 
 import android.app.Activity
 import android.content.Intent
@@ -19,7 +19,8 @@ class VoiceActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = intent
-        val realPassword = intent.getStringExtra("password")
+        val isSetPassword = intent.getBooleanExtra("set", false)
+        var realPassword = intent.getStringExtra("password")
 
         enableEdgeToEdge()
 
@@ -30,6 +31,10 @@ class VoiceActivity : ComponentActivity() {
                     if (recognizedText == realPassword) {
                         setResult(Activity.RESULT_OK)
                         Log.i("MY_LOG", "App is opened")
+                    } else if (isSetPassword) {
+                        realPassword = recognizedText
+                        setResult(Activity.RESULT_OK, Intent().putExtra("password", realPassword))
+                        Toast.makeText(this, "Password has been changed", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     Log.i("MY_LOG", "App opening is CANCELED!")
