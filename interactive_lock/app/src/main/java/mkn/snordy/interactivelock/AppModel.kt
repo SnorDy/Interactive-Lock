@@ -10,12 +10,14 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
 import kotlinx.coroutines.suspendCancellableCoroutine
+import mkn.snordy.interactivelock.locks.BongoLockActivity
 import mkn.snordy.interactivelock.locks.SetLockActivity
 import mkn.snordy.interactivelock.locks.VoiceActivity
 
 enum class LockType {
     VOICE,
     PASSWORD,
+    BONGO,
     NONE,
 }
 
@@ -25,12 +27,18 @@ class AppModel(
     val packageName: String,
     sharedPreferences: SharedPreferences,
 ) {
-    private var lockType = LockType.NONE
-    private var stringPassword = "пароль"
+    private var lockType = LockType.BONGO
+    private var stringPassword = "111"
 
     init {
         if (sharedPreferences.contains(packageName)) {
-            stringPassword = sharedPreferences.getString(packageName, "").toString()
+            var data = sharedPreferences.getString(packageName, "").toString()
+            stringPassword = data.substring(1)
+            when (data.get(0)){
+                'V' -> lockType = LockType.VOICE
+                'B' -> lockType = LockType.BONGO
+                'P' -> lockType = LockType.PASSWORD
+            }
         }
     }
 
@@ -42,8 +50,14 @@ class AppModel(
         newPassword: String,
         editor: Editor,
     ) {
-        stringPassword = newPassword.lowercase()
-        editor.putString(packageName, stringPassword)
+        stringPassword = newPassword.lowercase().substring(1)
+        when (newPassword.get(0)){
+            'V' -> lockType = LockType.VOICE
+            'B' -> lockType = LockType.BONGO
+            'P' -> lockType = LockType.PASSWORD
+        }
+
+        editor.putString(packageName, newPassword.lowercase())
         editor.apply()
     }
 
@@ -56,7 +70,13 @@ class AppModel(
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
-            val intent = Intent(context, VoiceActivity::class.java)
+            var intent = Intent()
+            when(lockType){
+                LockType.VOICE -> intent = Intent(context, VoiceActivity::class.java)
+                LockType.BONGO -> intent = Intent(context, BongoLockActivity::class.java)
+                LockType.PASSWORD -> intent = Intent(context, VoiceActivity::class.java)
+                LockType.NONE -> Intent(context, VoiceActivity::class.java)
+            }
             intent.putExtra("password", stringPassword)
             activityResultLauncher.launch(intent)
         }

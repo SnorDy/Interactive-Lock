@@ -14,7 +14,7 @@ import java.util.Locale
 
 class VoiceActivity : ComponentActivity() {
     private lateinit var activityLockLauncher: ActivityResultLauncher<Intent>
-    private var recognizedText = ""
+    private var recognizedText = "V"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

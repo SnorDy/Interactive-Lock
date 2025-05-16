@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
+        sharedPreferences.edit().clear().commit()
         editor = sharedPreferences.edit()
         enableEdgeToEdge()
         activityResultLauncher =

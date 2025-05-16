@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -49,33 +50,56 @@ class SetLockActivity : ComponentActivity() {
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .size(96.dp),
+                        ,
                 horizontalArrangement = Arrangement.Center,
             ) {
                 IconButton(
                     onClick = {
                         CoroutineScope(Dispatchers.Main).launch {
-                            runBlockForResult(baseContext, activityResultLauncher)
+                            runBongoForResult(baseContext, activityResultLauncher)
+                        }
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.bongo_n),
+                        contentDescription = "bongo icon",
+                        modifier = Modifier.size(256.dp),
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            runVoiceForResult(baseContext, activityResultLauncher)
                         }
                     },
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.mic_icon),
                         contentDescription = "Mic icon",
-                        modifier = Modifier.size(96.dp),
+                        modifier = Modifier.size(128.dp),
                     )
                 }
             }
         }
     }
 
-    suspend fun runBlockForResult(
+    suspend fun runVoiceForResult(
 // запускает голосовой ввод с пометкой установки пароля
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             val intent = Intent(context, VoiceActivity::class.java)
+            intent.putExtra("set", true)
+            activityResultLauncher.launch(intent)
+        }
+    suspend fun runBongoForResult(
+// запускает активность с котиком с пометкой установки пароля
+        context: Context,
+        activityResultLauncher: ActivityResultLauncher<Intent>,
+    ): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val intent = Intent(context, BongoLockActivity::class.java)
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }
