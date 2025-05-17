@@ -14,7 +14,7 @@ import java.util.Locale
 
 class VoiceActivity : ComponentActivity() {
     private lateinit var activityLockLauncher: ActivityResultLauncher<Intent>
-    private var recognizedText = "V"
+    private var recognizedText = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +32,7 @@ class VoiceActivity : ComponentActivity() {
                         setResult(Activity.RESULT_OK)
                         Log.i("MY_LOG", "App is opened")
                     } else if (isSetPassword) {
-                        realPassword = recognizedText
+                        realPassword = "v$recognizedText"
                         setResult(Activity.RESULT_OK, Intent().putExtra("password", realPassword))
                         Toast.makeText(this, "Password has been changed", Toast.LENGTH_SHORT).show()
                     }

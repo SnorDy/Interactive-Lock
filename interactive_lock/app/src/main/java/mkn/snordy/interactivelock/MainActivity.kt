@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
         sharedPreferences.edit().clear().commit()
-        editor = sharedPreferences.edit()
+//        editor = sharedPreferences.edit()
         enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -81,11 +81,11 @@ class MainActivity : ComponentActivity() {
                         }
                         isSettingPassword = false
                     } else {
-                        currentAppModel.runApp(packageManager, currentContext, true)
+                        currentAppModel.runApp(true)
                         Log.i("MY_LOG", "App is opened")
                     }
                 } else {
-                    currentAppModel.runApp(packageManager, currentContext, false)
+                    currentAppModel.runApp(false)
                     Log.i("MY_LOG", "App opening is CANCELED!")
                 }
             }
@@ -148,6 +148,7 @@ class MainActivity : ComponentActivity() {
                         drawableToPainter(it.activityInfo.loadIcon(packageManager)),
                         it.activityInfo.packageName,
                         sharedPreferences,
+                        packageManager,context
                     )
                 }
 

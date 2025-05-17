@@ -139,7 +139,7 @@ class BongoLockActivity : ComponentActivity() {
         Row{
             Button(modifier = Modifier.size(100.dp), onClick = {
                 if (isSetPassword) {
-                    setResult(Activity.RESULT_OK, Intent().putExtra("password", 'B'+newPassword))
+                    setResult(Activity.RESULT_OK, Intent().putExtra("password", "b$newPassword"))
                     Toast.makeText(baseContext, "Password has been changed", Toast.LENGTH_SHORT)
                     finish()
                 } else if (newPassword == realPassword) {

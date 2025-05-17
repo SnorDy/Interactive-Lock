@@ -79,6 +79,19 @@ class SetLockActivity : ComponentActivity() {
                         modifier = Modifier.size(128.dp),
                     )
                 }
+                IconButton(
+                    onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            runNoLockForResult(baseContext,activityResultLauncher)
+                        }
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.no_lock_icon),
+                        contentDescription = "No_lock icon",
+                        modifier = Modifier.size(128.dp),
+                    )
+                }
             }
         }
     }
@@ -100,6 +113,17 @@ class SetLockActivity : ComponentActivity() {
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             val intent = Intent(context, BongoLockActivity::class.java)
+            intent.putExtra("set", true)
+            activityResultLauncher.launch(intent)
+        }
+
+    suspend fun runNoLockForResult(
+// запускает активность с котиком с пометкой установки пароля
+        context: Context,
+        activityResultLauncher: ActivityResultLauncher<Intent>,
+    ): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val intent = Intent(context, NoLockActivity::class.java)
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }

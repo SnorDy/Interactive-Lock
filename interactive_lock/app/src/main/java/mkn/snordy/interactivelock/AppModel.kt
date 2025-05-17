@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mkn.snordy.interactivelock.locks.BongoLockActivity
+import mkn.snordy.interactivelock.locks.NoLockActivity
 import mkn.snordy.interactivelock.locks.SetLockActivity
 import mkn.snordy.interactivelock.locks.VoiceActivity
 
@@ -26,18 +27,22 @@ class AppModel(
     val icon: Painter?,
     val packageName: String,
     sharedPreferences: SharedPreferences,
+    packageM: PackageManager,context: Context
 ) {
-    private var lockType = LockType.BONGO
-    private var stringPassword = "111"
+    private var lockType = LockType.NONE
+    private var stringPassword = "0"
+    private val packageManager = packageM
+    private val context = context
 
     init {
         if (sharedPreferences.contains(packageName)) {
             var data = sharedPreferences.getString(packageName, "").toString()
             stringPassword = data.substring(1)
             when (data.get(0)){
-                'V' -> lockType = LockType.VOICE
-                'B' -> lockType = LockType.BONGO
-                'P' -> lockType = LockType.PASSWORD
+                'v' -> lockType = LockType.VOICE
+                'b' -> lockType = LockType.BONGO
+                'p' -> lockType = LockType.PASSWORD
+                'n' -> lockType = LockType.NONE
             }
         }
     }
@@ -52,9 +57,10 @@ class AppModel(
     ) {
         stringPassword = newPassword.lowercase().substring(1)
         when (newPassword.get(0)){
-            'V' -> lockType = LockType.VOICE
-            'B' -> lockType = LockType.BONGO
-            'P' -> lockType = LockType.PASSWORD
+            'v' -> lockType = LockType.VOICE
+            'b' -> lockType = LockType.BONGO
+            'p' -> lockType = LockType.PASSWORD
+            'n' -> lockType = LockType.NONE
         }
 
         editor.putString(packageName, newPassword.lowercase())
@@ -75,7 +81,7 @@ class AppModel(
                 LockType.VOICE -> intent = Intent(context, VoiceActivity::class.java)
                 LockType.BONGO -> intent = Intent(context, BongoLockActivity::class.java)
                 LockType.PASSWORD -> intent = Intent(context, VoiceActivity::class.java)
-                LockType.NONE -> Intent(context, VoiceActivity::class.java)
+                LockType.NONE -> intent = Intent(context, NoLockActivity::class.java)
             }
             intent.putExtra("password", stringPassword)
             activityResultLauncher.launch(intent)
@@ -92,8 +98,6 @@ class AppModel(
         }
 
     fun runApp(
-        packageManager: PackageManager,
-        context: Context,
         isLockPassed: Boolean,
     ) {
         if (isLockPassed) {
