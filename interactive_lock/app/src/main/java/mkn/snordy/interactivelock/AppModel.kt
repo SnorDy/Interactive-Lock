@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mkn.snordy.interactivelock.locks.BongoLockActivity
 import mkn.snordy.interactivelock.locks.NoLockActivity
@@ -107,14 +108,14 @@ class AppModel(
                     context.startActivity(launchIntent)
                 } catch (e: Exception) {
                     Log.e("LaunchApp", "Error launching app: ${e.message}")
-                    Toast.makeText(context, "Failed to launch app.", Toast.LENGTH_SHORT).show()
+                    Toasty.error(context, "Failed to launch app.", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 Log.e("LaunchApp", "App not found with package: $packageName")
-                Toast.makeText(context, "App not found.", Toast.LENGTH_SHORT).show()
+                Toasty.error(context, "App not found.", Toast.LENGTH_SHORT).show()
             }
         } else {
-            Toast.makeText(context, "Password isn't correct", Toast.LENGTH_SHORT).show()
+            Toasty.error(context, "Password isn't correct", Toast.LENGTH_SHORT).show()
         }
     }
 }

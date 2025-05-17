@@ -5,6 +5,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
 }
 
+
 ktlint {
     android = true
 }
@@ -49,7 +50,7 @@ android {
 }
 
 dependencies {
-
+    implementation("com.github.GrenderG:Toasty:1.5.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

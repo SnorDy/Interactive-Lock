@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import es.dmoral.toasty.Toasty
 import java.util.Locale
 
 class VoiceActivity : ComponentActivity() {
@@ -34,7 +35,6 @@ class VoiceActivity : ComponentActivity() {
                     } else if (isSetPassword) {
                         realPassword = "v$recognizedText"
                         setResult(Activity.RESULT_OK, Intent().putExtra("password", realPassword))
-                        Toast.makeText(this, "Password has been changed", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     Log.i("MY_LOG", "App opening is CANCELED!")
@@ -57,7 +57,7 @@ class VoiceActivity : ComponentActivity() {
         try {
             activityLockLauncher.launch(intent)
         } catch (e: Exception) {
-            Toast.makeText(this, " " + e.message, Toast.LENGTH_SHORT).show()
+            Toasty.error(this, " " + e.message, Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -50,6 +50,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,8 +67,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
-        sharedPreferences.edit().clear().commit()
-//        editor = sharedPreferences.edit()
+//        sharedPreferences.edit().clear().commit()
+        editor = sharedPreferences.edit()
+
         enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -92,24 +94,37 @@ class MainActivity : ComponentActivity() {
         setPasswordLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    currentAppModel.setPassword(result.data?.getStringExtra("password") ?: "", editor)
-                    Toast.makeText(
-                        baseContext,
-                        "Password for ${currentAppModel.packageName} is changed",
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                } else {
-                    Toast.makeText(
+                    currentAppModel.setPassword(
+                        result.data?.getStringExtra("password") ?: "",
+                        editor
+                    )
+                    Toasty.custom(
                         baseContext,
                         "Password for ${currentAppModel.name} is changed",
-                        Toast.LENGTH_SHORT,
+                        R.drawable.success_icon,
+                        es.dmoral.toasty.R.color.successColor,
+                        2000,
+                        true,
+                        true
+                    ).show()
+                } else {
+                    Toasty.custom(
+                        baseContext,
+                        "Password for ${currentAppModel.name} is changed",
+                        R.drawable.success_icon,
+                        es.dmoral.toasty.R.color.successColor,
+                        2400,
+                        true,
+                        true
                     ).show()
                 }
             }
         setContent {
             myLauncher(activityResultLauncher)
+
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
@@ -148,7 +163,7 @@ class MainActivity : ComponentActivity() {
                         drawableToPainter(it.activityInfo.loadIcon(packageManager)),
                         it.activityInfo.packageName,
                         sharedPreferences,
-                        packageManager,context
+                        packageManager, context
                     )
                 }
 

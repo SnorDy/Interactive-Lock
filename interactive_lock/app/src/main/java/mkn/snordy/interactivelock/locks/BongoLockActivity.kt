@@ -1,29 +1,29 @@
 package mkn.snordy.interactivelock.locks
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
@@ -33,6 +33,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import es.dmoral.toasty.Toasty
 import mkn.snordy.interactivelock.R
 
 class BongoLockActivity : ComponentActivity() {
@@ -136,23 +137,69 @@ class BongoLockActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize()
             )
         }
-        Row{
-            Button(modifier = Modifier.size(100.dp), onClick = {
-                if (isSetPassword) {
-                    setResult(Activity.RESULT_OK, Intent().putExtra("password", "b$newPassword"))
-                    Toast.makeText(baseContext, "Password has been changed", Toast.LENGTH_SHORT)
-                    finish()
-                } else if (newPassword == realPassword) {
-                    setResult(Activity.RESULT_OK)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(50.dp),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Button(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.White),
+                shape = RoundedCornerShape(5.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+
+                border = BorderStroke(2.dp, Color.Black),
+                onClick = {
+                    if (isSetPassword) {
+                        if (newPassword.isEmpty()) {
+
+                            Toasty.custom(
+                                baseContext,
+                                "The password can't be empty!",
+                                R.drawable.bongo_b,
+                                es.dmoral.toasty.R.color.errorColor,
+                                2000,
+                                true,
+                                true
+                            ).show()
+                        } else {
+                            setResult(
+                                Activity.RESULT_OK,
+                                Intent().putExtra("password", "b$newPassword")
+                            )
+                            finish()
+                        }
+                    } else if (newPassword == realPassword) {
+                        setResult(Activity.RESULT_OK)
+                        finish()
+                    } else {
+                        finish()
+                    }
+                }) { Text(color = Color.Black, text = "DONE") }
+
+            Button(
+                modifier = Modifier.size(100.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                shape = RoundedCornerShape(5.dp),
+                border = BorderStroke(2.dp, Color.Black),
+                onClick = {
+                    newPassword = ""
+                    Toasty.custom(
+                        baseContext,
+                        "RESET",
+                        R.drawable.bongo_b,
+                        R.color.teal_700,
+                        1000,
+                        true,
+                        true
+                    ).show()
+
+
                 }
-                finish()
-            }) { Text("DONE") }
-
-            Button(modifier = Modifier.size(100.dp), onClick = {
-                newPassword = ""
-
-            }
-            ) { Text("DROP") }}
+            ) { Text(color = Color.Black, text = "RESET") }
+        }
     }
 
 
