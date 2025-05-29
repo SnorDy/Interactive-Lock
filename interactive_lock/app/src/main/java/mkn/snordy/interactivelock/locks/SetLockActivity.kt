@@ -8,14 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -64,17 +60,22 @@ class SetLockActivity : ComponentActivity() {
         var btnSize = 64
         setContent {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
                 Row(
                     modifier =
-                        Modifier.fillMaxWidth().border(3.dp,shape = RectangleShape,color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),Alignment.CenterVertically
+                        Modifier
+                            .fillMaxWidth()
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
 
-                    ) {
-                    IconButton(modifier = Modifier.size(btnSize.dp),
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(btnSize.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runBongoForResult(baseContext, activityResultLauncher)
@@ -88,11 +89,17 @@ class SetLockActivity : ComponentActivity() {
                         )
                     }
 
-                Text("Bongo Cat Lock", fontSize = 18.sp)}
-                Row( modifier =
-                    Modifier.fillMaxWidth().border(3.dp,shape = RectangleShape,color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),Alignment.CenterVertically) {
-                    IconButton(modifier = Modifier.size(btnSize.dp),
+                    Text("Bongo Cat Lock", fontSize = 18.sp)
+                }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(btnSize.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runVoiceForResult(baseContext, activityResultLauncher)
@@ -102,16 +109,44 @@ class SetLockActivity : ComponentActivity() {
                         Icon(
                             painter = painterResource(R.drawable.mic_icon),
                             contentDescription = "Mic icon",
-                            modifier = Modifier.size(btnSize .dp),
+                            modifier = Modifier.size(btnSize.dp),
 
+                            )
+                    }
+                    Text("Voice Lock", fontSize = 18.sp)
+                }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(btnSize.dp),
+                        onClick = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                runTextLockForResult(baseContext, activityResultLauncher)
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.text_lock_icon),
+                            contentDescription = "text_lock icon",
+                            modifier = Modifier.size(96.dp),
                         )
                     }
-                    Text("Voice Lock",fontSize = 18.sp)
+                    Text("Text Lock", fontSize = 18.sp)
                 }
-                Row( modifier =
-                    Modifier.fillMaxWidth().border(3.dp,shape = RectangleShape,color = Color.Black,),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),Alignment.CenterVertically) {
-                    IconButton(modifier = Modifier.size(btnSize .dp),
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(btnSize.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runNoLockForResult(baseContext, activityResultLauncher)
@@ -124,7 +159,7 @@ class SetLockActivity : ComponentActivity() {
                             modifier = Modifier.size(96.dp),
                         )
                     }
-                    Text("No Lock",fontSize = 18.sp)
+                    Text("No Lock", fontSize = 18.sp)
                 }
 
             }
@@ -149,6 +184,16 @@ class SetLockActivity : ComponentActivity() {
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             val intent = Intent(context, BongoLockActivity::class.java)
+            intent.putExtra("set", true)
+            activityResultLauncher.launch(intent)
+        }
+    suspend fun runTextLockForResult(
+// запускает активность с котиком с пометкой установки пароля
+        context: Context,
+        activityResultLauncher: ActivityResultLauncher<Intent>,
+    ): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val intent = Intent(context, TextLockActivity::class.java)
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }

@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -54,53 +53,55 @@ import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import mkn.snordy.interactivelock.model.AppModel
+import mkn.snordy.interactivelock.view.AppView
+import mkn.snordy.interactivelock.viewModel.AppViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var setPasswordLauncher: ActivityResultLauncher<Intent>
     private lateinit var currentContext: Context
-    private lateinit var currentAppModel: AppModel
+    private lateinit var currentAppViewModel: AppViewModel
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: Editor
-    private var isSettingPassword = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
-//        sharedPreferences.edit().clear().commit()
+        sharedPreferences.edit().clear().commit()
         editor = sharedPreferences.edit()
 
         enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    if (isSettingPassword) {
+                    if (currentAppViewModel.isSettingPassword) {
                         CoroutineScope(Dispatchers.Main).launch {
-                            currentAppModel.runSetLockActivity(
+                            currentAppViewModel.runSetLockActivity(
                                 currentContext,
                                 setPasswordLauncher,
                             )
                         }
-                        isSettingPassword = false
+                        currentAppViewModel.isSettingPassword = false
                     } else {
-                        currentAppModel.runApp(true)
+                        currentAppViewModel.runApp(true)
                         Log.i("MY_LOG", "App is opened")
                     }
                 } else {
-                    currentAppModel.runApp(false)
+                    currentAppViewModel.runApp(false)
                     Log.i("MY_LOG", "App opening is CANCELED!")
                 }
             }
         setPasswordLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    currentAppModel.setPassword(
+                    currentAppViewModel.setPassword(
                         result.data?.getStringExtra("password") ?: "",
                         editor
                     )
                     Toasty.custom(
                         baseContext,
-                        "Password for ${currentAppModel.name} is changed",
+                        "Password for ${currentAppViewModel.name} is changed",
                         R.drawable.success_icon,
                         es.dmoral.toasty.R.color.successColor,
                         2000,
@@ -110,7 +111,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     Toasty.custom(
                         baseContext,
-                        "Password for ${currentAppModel.name} is changed",
+                        "Password for ${currentAppViewModel.name} is changed",
                         R.drawable.success_icon,
                         es.dmoral.toasty.R.color.successColor,
                         2400,
@@ -124,6 +125,7 @@ class MainActivity : ComponentActivity() {
 
         }
     }
+    fun setCurrentApp(currApp: AppViewModel){currentAppViewModel=currApp}
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -153,7 +155,6 @@ class MainActivity : ComponentActivity() {
         val intent = Intent(Intent.ACTION_MAIN, null)
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
 
-        Log.i("APPLIST", "START")
         val appList =
             context.packageManager.queryIntentActivities(intent, 0)
                 .filterNotNull()
@@ -168,124 +169,40 @@ class MainActivity : ComponentActivity() {
                 }
 
         val appListAdapter = AppModelsAdapter(appList)
-        Log.i("APPLIST", appList.toString())
-        drawApp(appListAdapter, packageManager, activityResultLauncher = activityResultLauncher)
+        val appViewList = appListAdapter.appsList.map { app -> AppView(AppViewModel(app)) }
+        drawApp(appViewList, activityResultLauncher = activityResultLauncher)
     }
 
     fun drawableToPainter(drawable: Drawable): Painter {
         return BitmapPainter(drawable.toBitmap().asImageBitmap())
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    fun appListItem(
-        app: AppModel,
-        modifier: Modifier,
-        packageManager: PackageManager,
-        context: Context,
-        activityResultLauncher: ActivityResultLauncher<Intent>,
-    ) {
-        Column(
-            modifier =
-                modifier
-                    .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            if (app.icon != null) {
-                Box(
-                    modifier =
-                        Modifier
-                            .combinedClickable(
-                                onClick = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        currentAppModel = app
-                                        currentContext = context
-                                        app.runBlockForResult(context, activityResultLauncher)
-                                    }
-                                },
-                                onLongClick = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        currentAppModel = app
-                                        currentContext = context
-                                        isSettingPassword = true
-                                        app.runBlockForResult(context, activityResultLauncher)
-                                    }
-                                },
-                            )
-                            .size(48.dp),
-                ) {
-                    Image(
-                        painter = app.icon,
-                        contentDescription = app.name,
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-            } else {
-                Box(
-                    modifier =
-                        Modifier
-                            .combinedClickable(
-                                onClick = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        currentAppModel = app
-                                        currentContext = context
-                                        app.runBlockForResult(context, activityResultLauncher)
-                                    }
-                                },
-                                onLongClick = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        currentAppModel = app
-                                        currentContext = context
-                                        isSettingPassword = true
-                                        app.runBlockForResult(context, activityResultLauncher)
-                                    }
-                                },
-                            )
-                            .size(48.dp),
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = app.name,
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-            }
-            Log.i("APPLIST", app.name)
-            Text(
-                text = app.name,
-                color = Color.Black,
-                fontSize = 8.sp,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
+
 
     @Composable
     fun drawApp(
-        adapter: AppModelsAdapter,
-        packageManager: PackageManager,
+        appList: List<AppView>,
         modifier: Modifier = Modifier,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ) {
-        val apps = adapter.appsList
         val context = LocalContext.current
-        val configuration = LocalConfiguration.current
-        Log.i("APPLIST", (configuration.screenWidthDp / 48).toString())
         LazyVerticalGrid(
             columns = GridCells.Adaptive(84.dp),
             modifier = modifier.fillMaxSize(),
         ) {
-            items(items = apps) { app ->
-                appListItem(
-                    app = app,
+            items(appList) { app ->
+                app.AppListItem(
+
                     modifier =
                         Modifier
                             .size(90.dp),
-                    packageManager = packageManager,
                     context,
                     activityResultLauncher,
+                    {setCurrentApp(app.appViewModel)}
                 )
+                currentAppViewModel= app.appViewModel
+                currentContext = context
+
             }
         }
     }

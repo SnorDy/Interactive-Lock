@@ -53,6 +53,11 @@
             android:label="Interactive Lock">
         </activity>
         <activity
+            android:name=".locks.TextLockActivity"
+            android:exported="false"
+            android:label="Interactive Lock">
+        </activity>
+        <activity
             android:name=".locks.BongoLockActivity"
             android:exported="false"
             android:label="Interactive Lock">

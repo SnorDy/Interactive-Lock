@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,16 +35,20 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import mkn.snordy.interactivelock.R
 
 class BongoLockActivity : ComponentActivity() {
     var isSetPassword = false
     var realPassword = ""
     var newPassword = "";
+    val mutex = Mutex()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val intent = intent
+        newPassword = ""
         isSetPassword = intent.getBooleanExtra("set", false)
         realPassword = intent.getStringExtra("password").toString()
 
@@ -57,16 +62,16 @@ class BongoLockActivity : ComponentActivity() {
         leftImage: Painter,
         rightImage: Painter,
         baseImage: Painter,
-        twoFingersImage: Painter,
+        SwipeImage: Painter,
         onLeftClick: () -> Unit,
         onRightClick: () -> Unit,
-        onTwoFingerClick: () -> Unit = {},
+        onSwipe: () -> Unit = {},
         modifier: Modifier = Modifier
     ) {
 
         var currentImage by remember { mutableStateOf(baseImage) } // Текущее изображение
         var touchCount by remember { mutableStateOf(0) }
-        var isTwoFingerClickInProgress by remember { mutableStateOf(false) }
+        var isSwipeInProgress by remember { mutableStateOf(false) }
         var isLeftClickLaunched by remember { mutableStateOf(false) }
         var isRightClickLaunched by remember { mutableStateOf(false) }
         var width by remember { mutableStateOf(0f) }
@@ -79,8 +84,34 @@ class BongoLockActivity : ComponentActivity() {
                 .onGloballyPositioned { coordinates ->
                     width = coordinates.size.width.toFloat()
                 } // Высота кнопки
-                .pointerInput(Unit) { // Обработка двух пальцев
+                .pointerInput(Unit) {
                     coroutineScope {
+                        mutex.withLock {
+                            detectVerticalDragGestures(
+                                onDragEnd = {
+                                    onSwipe()
+                                    isSwipeInProgress = false
+                                },
+                                onVerticalDrag = { change, dragAmount ->
+                                    if (dragAmount < -50) {
+                                        isSwipeInProgress = true
+
+                                        currentImage = SwipeImage
+                                        launch {
+                                            delay(200)
+
+                                            currentImage = baseImage
+
+                                        }
+                                    }
+                                })
+                        }
+                    }
+                }
+                .pointerInput(Unit) {
+                    coroutineScope {
+
+
                         while (true) {
                             val event = awaitPointerEventScope {
                                 awaitPointerEvent()
@@ -91,17 +122,8 @@ class BongoLockActivity : ComponentActivity() {
 
                             if (down != null) {
                                 touchCount = event.changes.count { it.pressed }
-                                if (touchCount == 2 && !isTwoFingerClickInProgress) {
-                                    isTwoFingerClickInProgress = true
-                                    onTwoFingerClick()
-                                    currentImage = twoFingersImage
-                                    launch {
-                                        delay(200)
-                                        isTwoFingerClickInProgress = false
-                                        currentImage = baseImage
-
-                                    }
-                                } else if (touchCount == 1) {
+//
+                                if (touchCount == 1&&!isSwipeInProgress) {
                                     // Обработка одного пальца
                                     if (x < width / 2 && !isLeftClickLaunched && !isRightClickLaunched) {
                                         onLeftClick()
@@ -113,7 +135,7 @@ class BongoLockActivity : ComponentActivity() {
                                             isLeftClickLaunched = false
                                         }
 
-                                    } else if (!isLeftClickLaunched && !isRightClickLaunched) {
+                                    } else if (!isLeftClickLaunched && !isRightClickLaunched && !isSwipeInProgress) {
                                         onRightClick()
                                         currentImage = rightImage
                                         isRightClickLaunched = true
@@ -127,6 +149,7 @@ class BongoLockActivity : ComponentActivity() {
                             }
                         }
                     }
+
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -214,18 +237,19 @@ class BongoLockActivity : ComponentActivity() {
             leftImage = leftImage,
             rightImage = rightImage,
             baseImage = baseImage,
-            twoFingersImage = twoFingersImage,
+            SwipeImage = twoFingersImage,
             onLeftClick = {
                 newPassword += "1"
-                Log.d("PRESS", "LEFT PRESSED")
+                Log.i("PRESS", "LEFT PRESSED")
             },
             onRightClick = {
                 newPassword += "2"
-                Log.d("PRESS", "RIGHT PRESSED")
+                Log.i("PRESS", "RIGHT PRESSED")
             },
-            onTwoFingerClick = {
+            onSwipe = {
+
                 newPassword += "3"
-                Log.d("PRESS", "TWO PRESSED")
+                Log.i("PRESS", "TWO PRESSED")
             }
         )
     }

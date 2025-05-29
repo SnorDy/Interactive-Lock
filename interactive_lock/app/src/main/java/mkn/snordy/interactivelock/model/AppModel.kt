@@ -1,4 +1,4 @@
-package mkn.snordy.interactivelock
+package mkn.snordy.interactivelock.model
 
 import android.content.Context
 import android.content.Intent
@@ -14,12 +14,14 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import mkn.snordy.interactivelock.locks.BongoLockActivity
 import mkn.snordy.interactivelock.locks.NoLockActivity
 import mkn.snordy.interactivelock.locks.SetLockActivity
+import mkn.snordy.interactivelock.locks.TextLockActivity
 import mkn.snordy.interactivelock.locks.VoiceActivity
 
 enum class LockType {
     VOICE,
     PASSWORD,
     BONGO,
+    TEXT,
     NONE,
 }
 
@@ -43,7 +45,9 @@ class AppModel(
                 'v' -> lockType = LockType.VOICE
                 'b' -> lockType = LockType.BONGO
                 'p' -> lockType = LockType.PASSWORD
+                't' -> lockType = LockType.TEXT
                 'n' -> lockType = LockType.NONE
+
             }
         }
     }
@@ -61,6 +65,7 @@ class AppModel(
             'v' -> lockType = LockType.VOICE
             'b' -> lockType = LockType.BONGO
             'p' -> lockType = LockType.PASSWORD
+            't' -> lockType = LockType.TEXT
             'n' -> lockType = LockType.NONE
         }
 
@@ -83,6 +88,7 @@ class AppModel(
                 LockType.BONGO -> intent = Intent(context, BongoLockActivity::class.java)
                 LockType.PASSWORD -> intent = Intent(context, VoiceActivity::class.java)
                 LockType.NONE -> intent = Intent(context, NoLockActivity::class.java)
+                LockType.TEXT -> intent = Intent(context, TextLockActivity::class.java)
             }
             intent.putExtra("password", stringPassword)
             activityResultLauncher.launch(intent)
