@@ -43,14 +43,6 @@ class AppViewModel(val appModel: AppModel) {
         appModel.runSetLockActivity(context, activityResultLauncher)
     }
 
-
-    suspend fun runBlockForResult(
-        context: Context,
-        activityResultLauncher: ActivityResultLauncher<Intent>
-    ) {
-        appModel.runBlockForResult(context, activityResultLauncher)
-    }
-
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun drawApp(
@@ -58,7 +50,6 @@ class AppViewModel(val appModel: AppModel) {
         activityResultLauncher: ActivityResultLauncher<Intent>,
         setCurrentApp: (AppViewModel) -> Unit
     ) {
-
         Box(
             modifier =
                 Modifier

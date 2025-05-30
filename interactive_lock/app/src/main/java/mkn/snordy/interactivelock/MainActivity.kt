@@ -5,8 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -17,28 +15,34 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -49,13 +53,18 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mkn.snordy.interactivelock.customToast.CustomToast
 import mkn.snordy.interactivelock.model.AppModel
+import mkn.snordy.interactivelock.other.QuestionActivity
 import mkn.snordy.interactivelock.view.AppView
 import mkn.snordy.interactivelock.viewModel.AppViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
@@ -63,25 +72,36 @@ class MainActivity : ComponentActivity() {
     private lateinit var currentContext: Context
     private lateinit var currentAppViewModel: AppViewModel
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var editor: Editor
+    private lateinit var questionSharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
-        sharedPreferences.edit().clear().commit()
+        questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)
         editor = sharedPreferences.edit()
+
+        if (!questionSharedPreferences.contains("isFirstLaunch")) {
+            var intent = Intent(
+                baseContext,
+                QuestionActivity::class.java
+            )
+            startActivityForResult(intent, 1)
+        }
 
         enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
+                if (result.resultCode == RESULT_OK) {
                     if (currentAppViewModel.isSettingPassword) {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            currentAppViewModel.runSetLockActivity(
-                                currentContext,
-                                setPasswordLauncher,
-                            )
-                        }
+                        CoroutineScope(Dispatchers.Main)
+                            .launch {
+                                currentAppViewModel.runSetLockActivity(
+                                    currentContext,
+                                    setPasswordLauncher,
+                                )
+                            }
                         currentAppViewModel.isSettingPassword = false
                     } else {
                         currentAppViewModel.runApp(true)
@@ -94,30 +114,21 @@ class MainActivity : ComponentActivity() {
             }
         setPasswordLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
+                if (result.resultCode == RESULT_OK) {
                     currentAppViewModel.setPassword(
                         result.data?.getStringExtra("password") ?: "",
                         editor
                     )
-                    Toasty.custom(
+                    CustomToast.Companion.showSuccessToast(
                         baseContext,
-                        "Password for ${currentAppViewModel.name} is changed",
-                        R.drawable.success_icon,
-                        es.dmoral.toasty.R.color.successColor,
-                        2000,
-                        true,
-                        true
-                    ).show()
+                        "Password for ${currentAppViewModel.name} is changed"
+                    )
                 } else {
-                    Toasty.custom(
+                    CustomToast.Companion.showInfoToast(
                         baseContext,
-                        "Password for ${currentAppViewModel.name} is changed",
-                        R.drawable.success_icon,
-                        es.dmoral.toasty.R.color.successColor,
-                        2400,
-                        true,
-                        true
-                    ).show()
+                        "BACK"
+                    )
+
                 }
             }
         setContent {
@@ -125,7 +136,10 @@ class MainActivity : ComponentActivity() {
 
         }
     }
-    fun setCurrentApp(currApp: AppViewModel){currentAppViewModel=currApp}
+
+    fun setCurrentApp(currApp: AppViewModel) {
+        currentAppViewModel = currApp
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -157,7 +171,7 @@ class MainActivity : ComponentActivity() {
 
         val appList =
             context.packageManager.queryIntentActivities(intent, 0)
-                .filterNotNull()
+                .filterNotNull().filter { it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock" }
                 .map {
                     AppModel(
                         it.activityInfo.loadLabel(packageManager).toString(),
@@ -169,39 +183,132 @@ class MainActivity : ComponentActivity() {
                 }
 
         val appListAdapter = AppModelsAdapter(appList)
-        val appViewList = appListAdapter.appsList.map { app -> AppView(AppViewModel(app)) }
-        drawApp(appViewList, activityResultLauncher = activityResultLauncher)
+        val appViewList = appListAdapter.appsList.map { app ->
+            AppView(
+                AppViewModel(app)
+            )
+        }
+        menuBar()
+        drawApps(appViewList, activityResultLauncher = activityResultLauncher)
     }
 
     fun drawableToPainter(drawable: Drawable): Painter {
-        return BitmapPainter(drawable.toBitmap().asImageBitmap())
+        return BitmapPainter(
+            drawable.toBitmap().asImageBitmap()
+        )
     }
 
 
+    private fun getCurrentTime(): String {
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return sdf.format(Date())
+    }
 
     @Composable
-    fun drawApp(
+    fun expandedMenu() {
+        var isExpanded by remember {
+            mutableStateOf(
+                false
+            )
+        }
+        Box(
+            modifier = Modifier.Companion.offset(
+                x = 5.dp
+            )
+        ) {
+            IconButton(
+                modifier = Modifier.Companion
+                    .size(56.dp)
+                    .offset(x = 15.dp),
+                onClick = { isExpanded = true },
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.menu_icon),
+                    contentDescription = "menu_icon",
+                    modifier = Modifier.Companion.size(36.dp)
+                )
+            }
+
+            DropdownMenu(
+                modifier = Modifier.Companion
+                    .background(color = Color.Companion.White)
+                    .border(
+                        color = Color.Companion.Black,
+                        width = 1.dp
+                    ),
+                expanded = isExpanded,
+                onDismissRequest = { isExpanded = false }
+
+            ) {
+                DropdownMenuItem(
+                    onClick = {
+                        val intent = Intent(currentContext, QuestionActivity::class.java)
+                        intent.putExtra("reset", true)
+                        isExpanded = false
+                        startActivity(intent)
+                    },
+                    text = { Text("Reset passwords") }
+                )
+            }
+
+        }
+
+    }
+
+    @Composable
+    fun menuBar() {
+        var currentTime by remember { mutableStateOf(getCurrentTime()) }
+        LaunchedEffect(key1 = true) {
+            while (true) {
+                delay(1000)
+                currentTime = getCurrentTime()
+            }
+        }
+        Row(
+            modifier = Modifier.Companion
+                .fillMaxWidth()
+                .size(50.dp)
+                .border(1.dp, color = Color.Companion.Black)
+        ) {
+            Text(
+                modifier = Modifier.Companion
+                    .offset(x = 130.dp, y = 15.dp)
+                    .fillMaxSize(),
+                textAlign = TextAlign.Companion.Center,
+                text = currentTime,
+                fontSize = 22.sp
+            )
+
+        }
+        expandedMenu()
+
+    }
+
+    @Composable
+    fun drawApps(
         appList: List<AppView>,
-        modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier.Companion,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ) {
         val context = LocalContext.current
         LazyVerticalGrid(
             columns = GridCells.Adaptive(84.dp),
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = 50.dp),
         ) {
             items(appList) { app ->
-                app.AppListItem(
 
+                app.AppListItem(
                     modifier =
-                        Modifier
+                        Modifier.Companion
                             .size(90.dp),
                     context,
-                    activityResultLauncher,
-                    {setCurrentApp(app.appViewModel)}
-                )
-                currentAppViewModel= app.appViewModel
+                    activityResultLauncher
+                ) { setCurrentApp(app.appViewModel) }
+                currentAppViewModel = app.appViewModel
                 currentContext = context
+
 
             }
         }

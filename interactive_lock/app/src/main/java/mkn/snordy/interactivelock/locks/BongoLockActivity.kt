@@ -34,10 +34,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mkn.snordy.interactivelock.R
+import mkn.snordy.interactivelock.customToast.CustomToast
 
 class BongoLockActivity : ComponentActivity() {
     var isSetPassword = false
@@ -177,16 +177,7 @@ class BongoLockActivity : ComponentActivity() {
                 onClick = {
                     if (isSetPassword) {
                         if (newPassword.isEmpty()) {
-
-                            Toasty.custom(
-                                baseContext,
-                                "The password can't be empty!",
-                                R.drawable.bongo_b,
-                                es.dmoral.toasty.R.color.errorColor,
-                                2000,
-                                true,
-                                true
-                            ).show()
+                            CustomToast.showErrorToast(baseContext, "The password can't be empty!")
                         } else {
                             setResult(
                                 Activity.RESULT_OK,
@@ -209,16 +200,7 @@ class BongoLockActivity : ComponentActivity() {
                 border = BorderStroke(2.dp, Color.Black),
                 onClick = {
                     newPassword = ""
-                    Toasty.custom(
-                        baseContext,
-                        "RESET",
-                        R.drawable.bongo_b,
-                        R.color.teal_700,
-                        1000,
-                        true,
-                        true
-                    ).show()
-
+                    CustomToast.showInfoToast(baseContext,"RESET")
 
                 }
             ) { Text(color = Color.Black, text = "RESET") }

@@ -32,7 +32,7 @@ class NLService : NotificationListenerService() {
             return
         }
         cancelNotification(sbn.key)
-        createAndSendNotification(sbn)
+//        createAndSendNotification(sbn)
     }
 
     private fun isMyNotification(sbn: StatusBarNotification): Boolean {

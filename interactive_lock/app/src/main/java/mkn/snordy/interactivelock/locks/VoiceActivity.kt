@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import es.dmoral.toasty.Toasty
+import mkn.snordy.interactivelock.customToast.CustomToast
 import java.util.Locale
 
 class VoiceActivity : ComponentActivity() {
@@ -57,7 +58,7 @@ class VoiceActivity : ComponentActivity() {
         try {
             activityLockLauncher.launch(intent)
         } catch (e: Exception) {
-            Toasty.error(this, " " + e.message, Toast.LENGTH_SHORT).show()
+            CustomToast.showErrorToast(this," " +e.message)
         }
     }
 }

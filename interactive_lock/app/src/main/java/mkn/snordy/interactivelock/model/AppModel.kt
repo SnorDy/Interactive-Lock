@@ -30,12 +30,11 @@ class AppModel(
     val icon: Painter?,
     val packageName: String,
     sharedPreferences: SharedPreferences,
-    packageM: PackageManager,context: Context
+    packageM: PackageManager, private val context: Context
 ) {
     private var lockType = LockType.NONE
     private var stringPassword = "0"
     private val packageManager = packageM
-    private val context = context
 
     init {
         if (sharedPreferences.contains(packageName)) {
@@ -73,9 +72,6 @@ class AppModel(
         editor.apply()
     }
 
-    fun setLockType(type: LockType) {
-        lockType = type
-    }
 
     suspend fun runBlockForResult(
         context: Context,

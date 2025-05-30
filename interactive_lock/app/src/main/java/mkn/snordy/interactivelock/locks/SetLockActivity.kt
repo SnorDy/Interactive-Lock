@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -95,7 +96,8 @@ class SetLockActivity : ComponentActivity() {
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                            .border(3.dp, shape = RectangleShape, color = Color.Black)
+                           ,
                     horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
                 ) {
                     IconButton(
@@ -123,7 +125,7 @@ class SetLockActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
                 ) {
                     IconButton(
-                        modifier = Modifier.size(btnSize.dp),
+                        modifier = Modifier.size(btnSize.dp).offset(x= 5.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runTextLockForResult(baseContext, activityResultLauncher)

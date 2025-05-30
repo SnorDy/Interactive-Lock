@@ -47,7 +47,9 @@ android {
     buildFeatures {
         compose = true
     }
+
 }
+
 
 dependencies {
     implementation("com.github.GrenderG:Toasty:1.5.2")
