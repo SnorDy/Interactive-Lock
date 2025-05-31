@@ -1,9 +1,12 @@
 package mkn.snordy.interactivelock.locks
+import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,9 +24,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import mkn.snordy.interactivelock.customToast.CustomToast
 
 class TextLockActivity : ComponentActivity() {
@@ -39,8 +46,18 @@ class TextLockActivity : ComponentActivity() {
         realPassword = intent.getStringExtra("password").toString()
 
         setContent {
-
-
+            val view = LocalView.current
+            val currentWindow = (view.context as? Activity)?.window
+            val windowInsetsController =
+                remember(view) {
+                    WindowCompat.getInsetsController(
+                        currentWindow,
+                        view,
+                    )
+                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                hideSystemUI(windowInsetsController)
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -101,5 +118,11 @@ class TextLockActivity : ComponentActivity() {
                     }) { Text(color = Color.Black, text = "DONE") }
             }
         }
+    }
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
+        windowController?.hide(WindowInsetsCompat.Type.systemBars())
+        windowController?.hide(WindowInsetsCompat.Type.statusBars())
+        windowController?.hide(WindowInsetsCompat.Type.navigationBars())
     }
 }

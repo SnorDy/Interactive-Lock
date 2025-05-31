@@ -61,13 +61,13 @@ class SetLockActivity : ComponentActivity() {
             }
         var btnSize = 64
         setContent {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(30.dp).padding(top = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
                 Row(
                     modifier =
                         Modifier

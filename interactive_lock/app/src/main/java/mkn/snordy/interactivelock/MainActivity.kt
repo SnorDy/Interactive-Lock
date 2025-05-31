@@ -10,6 +10,9 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -73,17 +77,22 @@ class MainActivity : ComponentActivity() {
     private lateinit var currentContext: Context
     private lateinit var currentAppViewModel: AppViewModel
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var notifySharedPreferences: SharedPreferences
     private lateinit var questionSharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private lateinit var notifyEditor: SharedPreferences.Editor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!isDefaultLauncher()) {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+
         } else {
             sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
             questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)
+            notifySharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)
             editor = sharedPreferences.edit()
+            notifyEditor = notifySharedPreferences.edit()
 
             if (!questionSharedPreferences.contains("isFirstLaunch")) {
                 var intent = Intent(
@@ -146,11 +155,9 @@ class MainActivity : ComponentActivity() {
         return resolveInfo?.activityInfo?.packageName == packageName
     }
 
-
     fun setCurrentApp(currApp: AppViewModel) {
         currentAppViewModel = currApp
     }
-
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
@@ -175,6 +182,8 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             hideSystemUI(windowInsetsController)
         }
+
+
         val packageManager = context.packageManager
         val intent = Intent(Intent.ACTION_MAIN, null)
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
@@ -197,7 +206,7 @@ class MainActivity : ComponentActivity() {
         val appListAdapter = AppModelsAdapter(appList)
         val appViewList = appListAdapter.appsList.map { app ->
             AppView(
-                AppViewModel(app)
+                AppViewModel(app,notifySharedPreferences)
             )
         }
         menuBar()
@@ -261,6 +270,21 @@ class MainActivity : ComponentActivity() {
                     },
                     text = { Text("Reset passwords") }
                 )
+                Divider(color = Color.Black)
+                DropdownMenuItem(
+                    onClick = {
+                        isExpanded = false
+                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    },
+                    text = { Text("Access to notifications") })
+                Divider(color = Color.Black)
+                DropdownMenuItem(
+                    onClick = {
+                        isExpanded = false
+                        startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+                    },
+                    text = { Text("Exit") }
+                )
             }
 
         }
@@ -274,6 +298,17 @@ class MainActivity : ComponentActivity() {
             while (true) {
                 delay(1000)
                 currentTime = getCurrentTime()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    window.insetsController?.hide(WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE)
+                } else {
+                    // Для старых версий Android
+                    window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                }
             }
         }
         Row(
@@ -310,7 +345,6 @@ class MainActivity : ComponentActivity() {
                 .padding(top = 50.dp),
         ) {
             items(appList) { app ->
-
                 app.AppListItem(
                     modifier =
                         Modifier.Companion
@@ -320,8 +354,6 @@ class MainActivity : ComponentActivity() {
                 ) { setCurrentApp(app.appViewModel) }
                 currentAppViewModel = app.appViewModel
                 currentContext = context
-
-
             }
         }
     }

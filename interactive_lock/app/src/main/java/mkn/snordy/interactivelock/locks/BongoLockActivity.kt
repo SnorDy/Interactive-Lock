@@ -1,12 +1,15 @@
 package mkn.snordy.interactivelock.locks
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,6 +39,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mkn.snordy.interactivelock.R
@@ -53,8 +60,19 @@ class BongoLockActivity : ComponentActivity() {
         newPassword = ""
         isSetPassword = intent.getBooleanExtra("set", false)
         realPassword = intent.getStringExtra("password").toString()
-
         setContent {
+            val view = LocalView.current
+            val currentWindow = (view.context as? Activity)?.window
+            val windowInsetsController =
+                remember(view) {
+                    WindowCompat.getInsetsController(
+                        currentWindow,
+                        view,
+                    )
+                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                hideSystemUI(windowInsetsController)
+            }
             MyScreen()
         }
     }
@@ -208,7 +226,12 @@ class BongoLockActivity : ComponentActivity() {
             ) { Text(color = Color.Black, text = "RESET") }
         }
     }
-
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
+        windowController?.hide(WindowInsetsCompat.Type.systemBars())
+        windowController?.hide(WindowInsetsCompat.Type.statusBars())
+        windowController?.hide(WindowInsetsCompat.Type.navigationBars())
+    }
     @Composable
     fun MyScreen() {
         val leftImage = painterResource(id = R.drawable.bongo_r)

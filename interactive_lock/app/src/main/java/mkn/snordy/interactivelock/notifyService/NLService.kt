@@ -2,7 +2,9 @@ package mkn.snordy.interactivelock.notifyService
 
 import android.Manifest
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -18,7 +20,16 @@ import androidx.core.app.NotificationManagerCompat
 class NLService : NotificationListenerService() {
     private val channelID = "channelID"
     private val isMyNotificationExtra = "is_my_notification"
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
 
+
+    override fun onCreate() {
+        super.onCreate()
+        sharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)
+        editor = sharedPreferences.edit()
+//        editor.clear().commit()
+    }
     override fun onBind(intent: Intent): IBinder? {
         return super.onBind(intent)
     }
@@ -30,6 +41,9 @@ class NLService : NotificationListenerService() {
         if (isMyNotification(sbn)) {
             Log.d("NLService", "Ignoring my notification")
             return
+        }
+        if (!sharedPreferences.contains(sbn.packageName)){
+            editor.putBoolean(sbn.packageName,true).commit()
         }
         cancelNotification(sbn.key)
 //        createAndSendNotification(sbn)
