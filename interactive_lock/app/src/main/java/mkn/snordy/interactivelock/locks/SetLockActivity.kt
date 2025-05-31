@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -40,6 +41,7 @@ class SetLockActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
@@ -163,6 +165,29 @@ class SetLockActivity : ComponentActivity() {
                     }
                     Text("No Lock", fontSize = 18.sp)
                 }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(btnSize.dp),
+                        onClick = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                runNoLockForResult(baseContext, activityResultLauncher)
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.no_lock_icon),
+                            contentDescription = "No_lock icon",
+                            modifier = Modifier.size(96.dp),
+                        )
+                    }
+                    Text("Delete app", fontSize = 18.sp)
+                }
 
             }
         }
@@ -190,7 +215,7 @@ class SetLockActivity : ComponentActivity() {
             activityResultLauncher.launch(intent)
         }
     suspend fun runTextLockForResult(
-// запускает активность с котиком с пометкой установки пароля
+// запускает активность с текстовой блокировкой с пометкой установки пароля
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
@@ -201,13 +226,23 @@ class SetLockActivity : ComponentActivity() {
         }
 
     suspend fun runNoLockForResult(
-// запускает активность с котиком с пометкой установки пароля
+// запускает активность для снятия блокировки
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             val intent = Intent(context, NoLockActivity::class.java)
             intent.putExtra("set", true)
+            activityResultLauncher.launch(intent)
+        }
+    suspend fun runDeleteForResult(
+
+        context: Context,
+        activityResultLauncher: ActivityResultLauncher<Intent>,
+    ): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val intent = Intent(context, NoLockActivity::class.java)
+            intent.putExtra("delete", true)
             activityResultLauncher.launch(intent)
         }
 }

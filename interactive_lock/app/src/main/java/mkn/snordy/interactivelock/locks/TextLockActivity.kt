@@ -1,6 +1,4 @@
 package mkn.snordy.interactivelock.locks
-
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -87,13 +85,13 @@ class TextLockActivity : ComponentActivity() {
                                 )
                             } else {
                                 setResult(
-                                    Activity.RESULT_OK,
+                                    RESULT_OK,
                                     Intent().putExtra("password", "t$newPassword")
                                 )
                                 finish()
                             }
                         } else if (newPassword == realPassword) {
-                            setResult(Activity.RESULT_OK)
+                            setResult(RESULT_OK)
                             finish()
                         } else {
                             finish()

@@ -1,6 +1,6 @@
 package mkn.snordy.interactivelock.locks
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +19,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,7 +44,7 @@ import mkn.snordy.interactivelock.customToast.CustomToast
 class BongoLockActivity : ComponentActivity() {
     var isSetPassword = false
     var realPassword = ""
-    var newPassword = "";
+    var newPassword = ""
     val mutex = Mutex()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,24 +59,26 @@ class BongoLockActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("ReturnFromAwaitPointerEventScope")
     @Composable
     fun ImageButtonWithSides(
+        modifier: Modifier = Modifier,
         leftImage: Painter,
         rightImage: Painter,
         baseImage: Painter,
-        SwipeImage: Painter,
+        swipeImage: Painter,
         onLeftClick: () -> Unit,
         onRightClick: () -> Unit,
         onSwipe: () -> Unit = {},
-        modifier: Modifier = Modifier
-    ) {
+
+        ) {
 
         var currentImage by remember { mutableStateOf(baseImage) } // Текущее изображение
-        var touchCount by remember { mutableStateOf(0) }
+        var touchCount by remember { mutableIntStateOf(0) }
         var isSwipeInProgress by remember { mutableStateOf(false) }
         var isLeftClickLaunched by remember { mutableStateOf(false) }
         var isRightClickLaunched by remember { mutableStateOf(false) }
-        var width by remember { mutableStateOf(0f) }
+        var width by remember { mutableFloatStateOf(0f) }
 
 
         Box(
@@ -96,7 +100,7 @@ class BongoLockActivity : ComponentActivity() {
                                     if (dragAmount < -50) {
                                         isSwipeInProgress = true
 
-                                        currentImage = SwipeImage
+                                        currentImage = swipeImage
                                         launch {
                                             delay(200)
 
@@ -110,8 +114,6 @@ class BongoLockActivity : ComponentActivity() {
                 }
                 .pointerInput(Unit) {
                     coroutineScope {
-
-
                         while (true) {
                             val event = awaitPointerEventScope {
                                 awaitPointerEvent()
@@ -123,7 +125,7 @@ class BongoLockActivity : ComponentActivity() {
                             if (down != null) {
                                 touchCount = event.changes.count { it.pressed }
 //
-                                if (touchCount == 1&&!isSwipeInProgress) {
+                                if (touchCount == 1 && !isSwipeInProgress) {
                                     // Обработка одного пальца
                                     if (x < width / 2 && !isLeftClickLaunched && !isRightClickLaunched) {
                                         onLeftClick()
@@ -180,13 +182,13 @@ class BongoLockActivity : ComponentActivity() {
                             CustomToast.showErrorToast(baseContext, "The password can't be empty!")
                         } else {
                             setResult(
-                                Activity.RESULT_OK,
+                                RESULT_OK,
                                 Intent().putExtra("password", "b$newPassword")
                             )
                             finish()
                         }
                     } else if (newPassword == realPassword) {
-                        setResult(Activity.RESULT_OK)
+                        setResult(RESULT_OK)
                         finish()
                     } else {
                         finish()
@@ -200,13 +202,12 @@ class BongoLockActivity : ComponentActivity() {
                 border = BorderStroke(2.dp, Color.Black),
                 onClick = {
                     newPassword = ""
-                    CustomToast.showInfoToast(baseContext,"RESET")
+                    CustomToast.showInfoToast(baseContext, "RESET")
 
                 }
             ) { Text(color = Color.Black, text = "RESET") }
         }
     }
-
 
     @Composable
     fun MyScreen() {
@@ -219,7 +220,7 @@ class BongoLockActivity : ComponentActivity() {
             leftImage = leftImage,
             rightImage = rightImage,
             baseImage = baseImage,
-            SwipeImage = twoFingersImage,
+            swipeImage = twoFingersImage,
             onLeftClick = {
                 newPassword += "1"
                 Log.i("PRESS", "LEFT PRESSED")

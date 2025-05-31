@@ -40,7 +40,7 @@ class AppModel(
         if (sharedPreferences.contains(packageName)) {
             var data = sharedPreferences.getString(packageName, "").toString()
             stringPassword = data.substring(1)
-            when (data.get(0)){
+            when (data[0]){
                 'v' -> lockType = LockType.VOICE
                 'b' -> lockType = LockType.BONGO
                 'p' -> lockType = LockType.PASSWORD
@@ -60,7 +60,7 @@ class AppModel(
         editor: Editor,
     ) {
         stringPassword = newPassword.lowercase().substring(1)
-        when (newPassword.get(0)){
+        when (newPassword[0]){
             'v' -> lockType = LockType.VOICE
             'b' -> lockType = LockType.BONGO
             'p' -> lockType = LockType.PASSWORD
@@ -79,12 +79,12 @@ class AppModel(
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             var intent = Intent()
-            when(lockType){
-                LockType.VOICE -> intent = Intent(context, VoiceActivity::class.java)
-                LockType.BONGO -> intent = Intent(context, BongoLockActivity::class.java)
-                LockType.PASSWORD -> intent = Intent(context, VoiceActivity::class.java)
-                LockType.NONE -> intent = Intent(context, NoLockActivity::class.java)
-                LockType.TEXT -> intent = Intent(context, TextLockActivity::class.java)
+            intent = when(lockType){
+                LockType.VOICE -> Intent(context, VoiceActivity::class.java)
+                LockType.BONGO -> Intent(context, BongoLockActivity::class.java)
+                LockType.PASSWORD -> Intent(context, VoiceActivity::class.java)
+                LockType.NONE -> Intent(context, NoLockActivity::class.java)
+                LockType.TEXT -> Intent(context, TextLockActivity::class.java)
             }
             intent.putExtra("password", stringPassword)
             activityResultLauncher.launch(intent)

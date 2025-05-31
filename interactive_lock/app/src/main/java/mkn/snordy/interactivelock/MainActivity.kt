@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -75,67 +76,76 @@ class MainActivity : ComponentActivity() {
     private lateinit var questionSharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
-        questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)
-        editor = sharedPreferences.edit()
+        if (!isDefaultLauncher()) {
+            startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+        } else {
+            sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
+            questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)
+            editor = sharedPreferences.edit()
 
-        if (!questionSharedPreferences.contains("isFirstLaunch")) {
-            var intent = Intent(
-                baseContext,
-                QuestionActivity::class.java
-            )
-            startActivityForResult(intent, 1)
-        }
+            if (!questionSharedPreferences.contains("isFirstLaunch")) {
+                var intent = Intent(
+                    baseContext,
+                    QuestionActivity::class.java
+                )
+                startActivity(intent)
+            }
 
-        enableEdgeToEdge()
-        activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    if (currentAppViewModel.isSettingPassword) {
-                        CoroutineScope(Dispatchers.Main)
-                            .launch {
-                                currentAppViewModel.runSetLockActivity(
-                                    currentContext,
-                                    setPasswordLauncher,
-                                )
-                            }
-                        currentAppViewModel.isSettingPassword = false
+            enableEdgeToEdge()
+            activityResultLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        if (currentAppViewModel.isSettingPassword) {
+                            CoroutineScope(Dispatchers.Main)
+                                .launch {
+                                    currentAppViewModel.runSetLockActivity(
+                                        currentContext,
+                                        setPasswordLauncher,
+                                    )
+                                }
+                            currentAppViewModel.isSettingPassword = false
+                        } else {
+                            currentAppViewModel.runApp(true)
+                            Log.i("MY_LOG", "App is opened")
+                        }
                     } else {
-                        currentAppViewModel.runApp(true)
-                        Log.i("MY_LOG", "App is opened")
+                        currentAppViewModel.runApp(false)
+                        Log.i("MY_LOG", "App opening is CANCELED!")
                     }
-                } else {
-                    currentAppViewModel.runApp(false)
-                    Log.i("MY_LOG", "App opening is CANCELED!")
                 }
-            }
-        setPasswordLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    currentAppViewModel.setPassword(
-                        result.data?.getStringExtra("password") ?: "",
-                        editor
-                    )
-                    CustomToast.Companion.showSuccessToast(
-                        baseContext,
-                        "Password for ${currentAppViewModel.name} is changed"
-                    )
-                } else {
-                    CustomToast.Companion.showInfoToast(
-                        baseContext,
-                        "BACK"
-                    )
-
+            setPasswordLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        currentAppViewModel.setPassword(
+                            result.data?.getStringExtra("password") ?: "",
+                            editor
+                        )
+                        CustomToast.Companion.showSuccessToast(
+                            baseContext,
+                            "Password for ${currentAppViewModel.name} is changed"
+                        )
+                    } else {
+                        CustomToast.Companion.showInfoToast(
+                            baseContext,
+                            "BACK"
+                        )
+                    }
                 }
+            setContent {
+                myLauncher(activityResultLauncher)
             }
-        setContent {
-            myLauncher(activityResultLauncher)
-
         }
     }
+
+    private fun isDefaultLauncher(): Boolean {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        val resolveInfo = packageManager.resolveActivity(intent, 0)
+        return resolveInfo?.activityInfo?.packageName == packageName
+    }
+
 
     fun setCurrentApp(currApp: AppViewModel) {
         currentAppViewModel = currApp
@@ -171,7 +181,9 @@ class MainActivity : ComponentActivity() {
 
         val appList =
             context.packageManager.queryIntentActivities(intent, 0)
-                .filterNotNull().filter { it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock" }
+                .filterNotNull().filter {
+                    it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock"
+                }
                 .map {
                     AppModel(
                         it.activityInfo.loadLabel(packageManager).toString(),
