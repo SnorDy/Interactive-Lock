@@ -59,7 +59,6 @@ class SetLockActivity : ComponentActivity() {
                 }
                 finish()
             }
-        val intent = intent
         var btnSize = 64
         setContent {
             Column(
@@ -98,8 +97,7 @@ class SetLockActivity : ComponentActivity() {
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .border(3.dp, shape = RectangleShape, color = Color.Black)
-                           ,
+                            .border(3.dp, shape = RectangleShape, color = Color.Black),
                     horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
                 ) {
                     IconButton(
@@ -127,7 +125,9 @@ class SetLockActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
                 ) {
                     IconButton(
-                        modifier = Modifier.size(btnSize.dp).offset(x= 5.dp),
+                        modifier = Modifier
+                            .size(btnSize.dp)
+                            .offset(x = 5.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runTextLockForResult(baseContext, activityResultLauncher)
@@ -165,29 +165,7 @@ class SetLockActivity : ComponentActivity() {
                     }
                     Text("No Lock", fontSize = 18.sp)
                 }
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .border(3.dp, shape = RectangleShape, color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        modifier = Modifier.size(btnSize.dp),
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                runNoLockForResult(baseContext, activityResultLauncher)
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.no_lock_icon),
-                            contentDescription = "No_lock icon",
-                            modifier = Modifier.size(96.dp),
-                        )
-                    }
-                    Text("Delete app", fontSize = 18.sp)
-                }
+
 
             }
         }
@@ -214,6 +192,7 @@ class SetLockActivity : ComponentActivity() {
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }
+
     suspend fun runTextLockForResult(
 // запускает активность с текстовой блокировкой с пометкой установки пароля
         context: Context,
@@ -235,14 +214,6 @@ class SetLockActivity : ComponentActivity() {
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }
-    suspend fun runDeleteForResult(
 
-        context: Context,
-        activityResultLauncher: ActivityResultLauncher<Intent>,
-    ): Boolean =
-        suspendCancellableCoroutine { continuation ->
-            val intent = Intent(context, NoLockActivity::class.java)
-            intent.putExtra("delete", true)
-            activityResultLauncher.launch(intent)
-        }
+
 }

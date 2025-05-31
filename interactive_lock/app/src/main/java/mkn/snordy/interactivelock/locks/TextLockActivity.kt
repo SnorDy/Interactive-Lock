@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import mkn.snordy.interactivelock.customToast.CustomToast
@@ -64,6 +65,7 @@ class TextLockActivity : ComponentActivity() {
                     },
                     label = { Text(text = "Password") },
                     placeholder = { Text(text = "Enter the password") },
+                    visualTransformation = PasswordVisualTransformation()
 
 
                     )
