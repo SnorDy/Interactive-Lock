@@ -32,7 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import mkn.snordy.interactivelock.MainActivity
+import mkn.snordy.interactivelock.ui.MainActivity
 import mkn.snordy.interactivelock.R
 
 class SetLockActivity : ComponentActivity() {

@@ -1,4 +1,4 @@
-package mkn.snordy.interactivelock
+package mkn.snordy.interactivelock.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -61,8 +61,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mkn.snordy.interactivelock.R
 import mkn.snordy.interactivelock.customToast.CustomToast
 import mkn.snordy.interactivelock.model.AppModel
+import mkn.snordy.interactivelock.model.AppModelsAdapter
 import mkn.snordy.interactivelock.other.QuestionActivity
 import mkn.snordy.interactivelock.view.AppView
 import mkn.snordy.interactivelock.viewModel.AppViewModel

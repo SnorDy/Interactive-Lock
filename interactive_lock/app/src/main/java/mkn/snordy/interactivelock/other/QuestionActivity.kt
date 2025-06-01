@@ -54,7 +54,7 @@ import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import mkn.snordy.interactivelock.MainActivity
+import mkn.snordy.interactivelock.ui.MainActivity
 import mkn.snordy.interactivelock.R
 import mkn.snordy.interactivelock.customToast.CustomToast
 
