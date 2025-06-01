@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.suspendCancellableCoroutine
+import mkn.snordy.interactivelock.customToast.CustomToast
 import mkn.snordy.interactivelock.locks.BongoLockActivity
 import mkn.snordy.interactivelock.locks.NoLockActivity
 import mkn.snordy.interactivelock.locks.SetLockActivity
@@ -25,28 +26,28 @@ enum class LockType {
     NONE,
 }
 
-class AppModel(
+class AppModel( //класс, описывающий приложение
     val name: String,
     val icon: Painter?,
     val packageName: String,
     sharedPreferences: SharedPreferences,
-    packageM: PackageManager, private val context: Context
+    packageM: PackageManager,
+    private val context: Context,
 ) {
     private var lockType = LockType.NONE
     private var stringPassword = "0"
     private val packageManager = packageM
 
     init {
-        if (sharedPreferences.contains(packageName)) {
+        if (sharedPreferences.contains(packageName)) {//если для приложения была установлена блокировка
             var data = sharedPreferences.getString(packageName, "").toString()
-            stringPassword = data.substring(1)
-            when (data[0]){
+            stringPassword = data.substring(1)//получаем пароль
+            when (data[0]) {//первый символ указывает на тип блокировки
                 'v' -> lockType = LockType.VOICE
                 'b' -> lockType = LockType.BONGO
                 'p' -> lockType = LockType.PASSWORD
                 't' -> lockType = LockType.TEXT
                 'n' -> lockType = LockType.NONE
-
             }
         }
     }
@@ -60,32 +61,31 @@ class AppModel(
         editor: Editor,
     ) {
         stringPassword = newPassword.lowercase().substring(1)
-        when (newPassword[0]){
+        when (newPassword[0]) {
             'v' -> lockType = LockType.VOICE
             'b' -> lockType = LockType.BONGO
             'p' -> lockType = LockType.PASSWORD
             't' -> lockType = LockType.TEXT
             'n' -> lockType = LockType.NONE
         }
-
         editor.putString(packageName, newPassword.lowercase())
         editor.apply()
     }
 
-
-    suspend fun runBlockForResult(
+    suspend fun runBlockForResult(//запуск соответствующей блокировки при попытке открыть приложение
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
         suspendCancellableCoroutine { continuation ->
             var intent = Intent()
-            intent = when(lockType){
-                LockType.VOICE -> Intent(context, VoiceActivity::class.java)
-                LockType.BONGO -> Intent(context, BongoLockActivity::class.java)
-                LockType.PASSWORD -> Intent(context, VoiceActivity::class.java)
-                LockType.NONE -> Intent(context, NoLockActivity::class.java)
-                LockType.TEXT -> Intent(context, TextLockActivity::class.java)
-            }
+            intent =
+                when (lockType) {
+                    LockType.VOICE -> Intent(context, VoiceActivity::class.java)
+                    LockType.BONGO -> Intent(context, BongoLockActivity::class.java)
+                    LockType.PASSWORD -> Intent(context, VoiceActivity::class.java)
+                    LockType.NONE -> Intent(context, NoLockActivity::class.java)
+                    LockType.TEXT -> Intent(context, TextLockActivity::class.java)
+                }
             intent.putExtra("password", stringPassword)
             activityResultLauncher.launch(intent)
         }
@@ -100,24 +100,22 @@ class AppModel(
             activityResultLauncher.launch(intent)
         }
 
-    fun runApp(
-        isLockPassed: Boolean,
-    ) {
-        if (isLockPassed) {
-            val launchIntent: Intent? = packageManager.getLaunchIntentForPackage(packageName)
+    fun runApp(isLockPassed: Boolean) {
+        if (isLockPassed) {//если блокировка пройдена
+            val launchIntent: Intent? = packageManager.getLaunchIntentForPackage(packageName)//получаем интент для запуска текущего приложения
             if (launchIntent != null) {
                 try {
                     context.startActivity(launchIntent)
                 } catch (e: Exception) {
                     Log.e("LaunchApp", "Error launching app: ${e.message}")
-                    Toasty.error(context, "Failed to launch app.", Toast.LENGTH_SHORT).show()
+                    CustomToast.showErrorToast(context, "Failed to launch app.")
                 }
             } else {
                 Log.e("LaunchApp", "App not found with package: $packageName")
-                Toasty.error(context, "App not found.", Toast.LENGTH_SHORT).show()
+                CustomToast.showErrorToast(context, "App not found.")
             }
         } else {
-            Toasty.error(context, "Password isn't correct", Toast.LENGTH_SHORT).show()
+            CustomToast.showErrorToast(context, "Password isn't correct")
         }
     }
 }

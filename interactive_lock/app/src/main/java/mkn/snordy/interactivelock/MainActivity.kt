@@ -12,7 +12,6 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -86,59 +85,59 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (!isDefaultLauncher()) {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
-
         } else {
-            sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE)
-            questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)
-            notifySharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)
+            sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE) //хранит типы блокировок для каждого приложения
+            questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)//хранит контрольные вопросы с ответами для сброса блокировок
+            notifySharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)//хранит приложение и флаг true если пришло уведомление
             editor = sharedPreferences.edit()
             notifyEditor = notifySharedPreferences.edit()
 
-            if (!questionSharedPreferences.contains("isFirstLaunch")) {
-                var intent = Intent(
-                    baseContext,
-                    QuestionActivity::class.java
-                )
-                startActivity(intent)
+            if (!questionSharedPreferences.contains("isFirstLaunch")) {//если запуск первый
+                var intent =
+                    Intent(
+                        baseContext,
+                        QuestionActivity::class.java,
+                    )
+                startActivity(intent)//запускаем активность с контрольными вопросами
             }
 
             enableEdgeToEdge()
-            activityResultLauncher =
+            activityResultLauncher =//отслеживает была ли блокировка пройдена успешно
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    if (result.resultCode == RESULT_OK) {
-                        if (currentAppViewModel.isSettingPassword) {
+                    if (result.resultCode == RESULT_OK) {//если да
+                        if (currentAppViewModel.isSettingPassword) {//если текущее приложение в режиме установки пароля
                             CoroutineScope(Dispatchers.Main)
                                 .launch {
-                                    currentAppViewModel.runSetLockActivity(
+                                    currentAppViewModel.runSetLockActivity(//запускаем активность с выбором блокировки
                                         currentContext,
                                         setPasswordLauncher,
                                     )
                                 }
                             currentAppViewModel.isSettingPassword = false
-                        } else {
+                        } else {//если нет, то запускаем приложение с флагом, что блокировка пройдена
                             currentAppViewModel.runApp(true)
                             Log.i("MY_LOG", "App is opened")
                         }
                     } else {
-                        currentAppViewModel.runApp(false)
+                        currentAppViewModel.runApp(false)//если нет, то передаем false, как знак, что блокировка не пройдена
                         Log.i("MY_LOG", "App opening is CANCELED!")
                     }
                 }
-            setPasswordLauncher =
+            setPasswordLauncher =//отслеживает результат установки нового пароля
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                     if (result.resultCode == RESULT_OK) {
                         currentAppViewModel.setPassword(
                             result.data?.getStringExtra("password") ?: "",
-                            editor
+                            editor,
                         )
                         CustomToast.Companion.showSuccessToast(
                             baseContext,
-                            "Password for ${currentAppViewModel.name} is changed"
+                            "Password for ${currentAppViewModel.name} is changed",
                         )
                     } else {
                         CustomToast.Companion.showInfoToast(
                             baseContext,
-                            "BACK"
+                            "BACK",
                         )
                     }
                 }
@@ -148,7 +147,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun isDefaultLauncher(): Boolean {
+    private fun isDefaultLauncher(): Boolean {//проверка на то,что приложение главный экран по умочанию
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
         val resolveInfo = packageManager.resolveActivity(intent, 0)
@@ -160,7 +159,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
-    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
+    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {//сокрытие navigation bar
         windowController?.hide(WindowInsetsCompat.Type.systemBars())
         windowController?.hide(WindowInsetsCompat.Type.statusBars())
         windowController?.hide(WindowInsetsCompat.Type.navigationBars())
@@ -172,7 +171,7 @@ class MainActivity : ComponentActivity() {
         val context = LocalContext.current
         val view = LocalView.current
         val currentWindow = (view.context as? Activity)?.window
-        val windowInsetsController =
+        val windowInsetsController = //сокрытие navigation bar
             remember(view) {
                 WindowCompat.getInsetsController(
                     currentWindow,
@@ -183,15 +182,14 @@ class MainActivity : ComponentActivity() {
             hideSystemUI(windowInsetsController)
         }
 
-
-        val packageManager = context.packageManager
-        val intent = Intent(Intent.ACTION_MAIN, null)
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+        val packageManager = context.packageManager//объект, хранящий информацию о приложениях на устройстве
+        val intent = Intent(Intent.ACTION_MAIN, null)//указывает, что хотим запустить приложение
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)//ищем приложения, которые могут быть запущены с главного экрана
 
         val appList =
-            context.packageManager.queryIntentActivities(intent, 0)
+            context.packageManager.queryIntentActivities(intent, 0)//получаем все приложения по интенту
                 .filterNotNull().filter {
-                    it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock"
+                    it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock"//пропускаем свое
                 }
                 .map {
                     AppModel(
@@ -199,26 +197,27 @@ class MainActivity : ComponentActivity() {
                         drawableToPainter(it.activityInfo.loadIcon(packageManager)),
                         it.activityInfo.packageName,
                         sharedPreferences,
-                        packageManager, context
+                        packageManager,
+                        context,
                     )
                 }
 
         val appListAdapter = AppModelsAdapter(appList)
-        val appViewList = appListAdapter.appsList.map { app ->
-            AppView(
-                AppViewModel(app,notifySharedPreferences)
-            )
-        }
+        val appViewList =
+            appListAdapter.appsList.map { app ->
+                AppView(
+                    AppViewModel(app, notifySharedPreferences),
+                )
+            }
         menuBar()
         drawApps(appViewList, activityResultLauncher = activityResultLauncher)
     }
 
     fun drawableToPainter(drawable: Drawable): Painter {
         return BitmapPainter(
-            drawable.toBitmap().asImageBitmap()
+            drawable.toBitmap().asImageBitmap(),
         )
     }
-
 
     private fun getCurrentTime(): String {
         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -229,37 +228,39 @@ class MainActivity : ComponentActivity() {
     fun expandedMenu() {
         var isExpanded by remember {
             mutableStateOf(
-                false
+                false,
             )
         }
         Box(
-            modifier = Modifier.Companion.offset(
-                x = 5.dp
-            )
+            modifier =
+                Modifier.Companion.offset(
+                    x = 5.dp,
+                ),
         ) {
             IconButton(
-                modifier = Modifier.Companion
-                    .size(56.dp)
-                    .offset(x = 15.dp),
+                modifier =
+                    Modifier.Companion
+                        .size(56.dp)
+                        .offset(x = 15.dp),
                 onClick = { isExpanded = true },
             ) {
                 Icon(
                     painter = painterResource(R.drawable.menu_icon),
                     contentDescription = "menu_icon",
-                    modifier = Modifier.Companion.size(36.dp)
+                    modifier = Modifier.Companion.size(36.dp),
                 )
             }
 
             DropdownMenu(
-                modifier = Modifier.Companion
-                    .background(color = Color.Companion.White)
-                    .border(
-                        color = Color.Companion.Black,
-                        width = 1.dp
-                    ),
+                modifier =
+                    Modifier.Companion
+                        .background(color = Color.Companion.White)
+                        .border(
+                            color = Color.Companion.Black,
+                            width = 1.dp,
+                        ),
                 expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }
-
+                onDismissRequest = { isExpanded = false },
             ) {
                 DropdownMenuItem(
                     onClick = {
@@ -268,7 +269,7 @@ class MainActivity : ComponentActivity() {
                         isExpanded = false
                         startActivity(intent)
                     },
-                    text = { Text("Reset passwords") }
+                    text = { Text("Reset passwords") },
                 )
                 Divider(color = Color.Black)
                 DropdownMenuItem(
@@ -276,25 +277,24 @@ class MainActivity : ComponentActivity() {
                         isExpanded = false
                         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                     },
-                    text = { Text("Access to notifications") })
+                    text = { Text("Access to notifications") },
+                )
                 Divider(color = Color.Black)
                 DropdownMenuItem(
                     onClick = {
                         isExpanded = false
                         startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
                     },
-                    text = { Text("Exit") }
+                    text = { Text("Exit") },
                 )
             }
-
         }
-
     }
 
     @Composable
     fun menuBar() {
         var currentTime by remember { mutableStateOf(getCurrentTime()) }
-        LaunchedEffect(key1 = true) {
+        LaunchedEffect(key1 = true) {//запускаем 1 раз корутину, которая отвечает за сокрытие статус бара и обновления текущего времени
             while (true) {
                 delay(1000)
                 currentTime = getCurrentTime()
@@ -302,33 +302,35 @@ class MainActivity : ComponentActivity() {
                     window.insetsController?.hide(WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE)
                 } else {
                     // Для старых версий Android
-                    window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                    window.decorView.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                             or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    )
                 }
             }
         }
         Row(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .size(50.dp)
-                .border(1.dp, color = Color.Companion.Black)
+            modifier =
+                Modifier.Companion
+                    .fillMaxWidth()
+                    .size(50.dp)
+                    .border(1.dp, color = Color.Companion.Black),
         ) {
             Text(
-                modifier = Modifier.Companion
-                    .offset(x = 130.dp, y = 15.dp)
-                    .fillMaxSize(),
+                modifier =
+                    Modifier.Companion
+                        .offset(x = 130.dp, y = 15.dp)
+                        .fillMaxSize(),
                 textAlign = TextAlign.Companion.Center,
                 text = currentTime,
-                fontSize = 22.sp
+                fontSize = 22.sp,
             )
-
         }
         expandedMenu()
-
     }
 
     @Composable
@@ -340,17 +342,18 @@ class MainActivity : ComponentActivity() {
         val context = LocalContext.current
         LazyVerticalGrid(
             columns = GridCells.Adaptive(84.dp),
-            modifier = modifier
-                .fillMaxSize()
-                .padding(top = 50.dp),
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .padding(top = 50.dp),
         ) {
             items(appList) { app ->
-                app.AppListItem(
+                app.appListItem(
                     modifier =
                         Modifier.Companion
                             .size(90.dp),
                     context,
-                    activityResultLauncher
+                    activityResultLauncher,
                 ) { setCurrentApp(app.appViewModel) }
                 currentAppViewModel = app.appViewModel
                 currentContext = context

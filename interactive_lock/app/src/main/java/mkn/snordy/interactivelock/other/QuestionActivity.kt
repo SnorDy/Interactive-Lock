@@ -62,12 +62,13 @@ class QuestionActivity : ComponentActivity() {
     private lateinit var questionSharedPreferences: SharedPreferences
     private lateinit var mainSharedPreferences: SharedPreferences
     private lateinit var questionEditor: SharedPreferences.Editor
-    private val questionList = mutableListOf<String>(
-        "What was the name of your favorite teacher in high school?",
-        "What was the name of your favorite childhood book?",
-        "What is your favorite movie?",
-        "What was your first pet’s name?"
-    )
+    private val questionList =
+        mutableListOf<String>(
+            "What was the name of your favorite teacher in high school?",
+            "What was the name of your favorite childhood book?",
+            "What is your favorite movie?",
+            "What was your first pet’s name?",
+        )
     private var isReset = false
     private val question = questionList.random()
     private lateinit var correctAnswer: String
@@ -90,12 +91,14 @@ class QuestionActivity : ComponentActivity() {
                 window.insetsController?.hide(WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE)
             } else {
                 // Для старых версий Android
-                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
             }
             val view = LocalView.current
             val currentWindow = (view.context as? Activity)?.window
@@ -109,11 +112,14 @@ class QuestionActivity : ComponentActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 hideSystemUI(windowInsetsController)
             }
-            if (isReset)
-                resetView()
-            else setAnswerView()
+            if (isReset) {
+                resetView()//если в режиме сброса
+            } else {
+                setAnswerView()//если в режиме установки контрольных вопросов (первый запуск)
+            }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.R)
     private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
         windowController?.hide(WindowInsetsCompat.Type.systemBars())
@@ -125,51 +131,51 @@ class QuestionActivity : ComponentActivity() {
     fun resetView() {
         var textEditValue by remember { mutableStateOf(TextFieldValue("")) }
         Column(
-            modifier = Modifier.Companion
-                .fillMaxSize()
-                .padding(20.dp),
+            modifier =
+                Modifier.Companion
+                    .fillMaxSize()
+                    .padding(20.dp),
             verticalArrangement = Arrangement.Center,
-
-            ) {
+        ) {
             Text(
-                modifier = Modifier.Companion
-                    .padding(top = 30.dp, bottom = 20.dp)
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier.Companion
+                        .padding(top = 30.dp, bottom = 20.dp)
+                        .fillMaxWidth(),
                 text = question,
                 fontSize = 16.sp,
-
-                )
+            )
             Row(
                 modifier = Modifier.Companion.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 TextField(
-                    modifier = Modifier.Companion
-                        .fillMaxWidth()
-                        .background(Color.Companion.White)
-                        .border(width = 1.dp, color = Color.Companion.Black),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.LightGray,
-                        unfocusedContainerColor = Color.LightGray,
-                        disabledContainerColor = Color.Gray,
-                        errorContainerColor = Color.Red.copy(alpha = 0.1f)
-                    ),
-
-
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxWidth()
+                            .background(Color.Companion.White)
+                            .border(width = 1.dp, color = Color.Companion.Black),
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            disabledContainerColor = Color.Gray,
+                            errorContainerColor = Color.Red.copy(alpha = 0.1f),
+                        ),
                     value = textEditValue,
                     onValueChange = {
                         textEditValue = it.copy(text = it.text.lowercase())
-
                     },
                     label = { Text(text = "Answer") },
                     placeholder = { Text(text = "Enter your answer") },
                 )
             }
             Button(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .padding(top = 25.dp)
-                    .background(Color.Companion.White),
+                modifier =
+                    Modifier.Companion
+                        .fillMaxWidth()
+                        .padding(top = 25.dp)
+                        .background(Color.Companion.White),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Companion.White),
                 border = BorderStroke(2.dp, Color.Companion.Black),
@@ -178,117 +184,120 @@ class QuestionActivity : ComponentActivity() {
                         mainSharedPreferences.edit(commit = true) { clear() }
                         CustomToast.Companion.showSuccessToast(
                             baseContext,
-                            "Passwords have been reset!"
+                            "Passwords have been reset!",
                         )
                         startActivity(Intent(baseContext, MainActivity::class.java))
                         finish()
-                    } else CustomToast.Companion.showErrorToast(
-                        baseContext,
-                        "Answer isn't correct!"
-                    )
-                }) {
+                    } else {
+                        CustomToast.Companion.showErrorToast(
+                            baseContext,
+                            "Answer isn't correct!",
+                        )
+                    }
+                },
+            ) {
                 Text(
                     color = Color.Companion.Black,
-                    text = "DONE"
+                    text = "DONE",
                 )
             }
 
             Button(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .padding(top = 10.dp)
-                    .background(Color.Companion.White),
+                modifier =
+                    Modifier.Companion
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .background(Color.Companion.White),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Companion.White),
                 border = BorderStroke(2.dp, Color.Companion.Black),
-                onClick = { finish() }) {
+                onClick = { finish() },
+            ) {
                 Text(
                     color = Color.Companion.Black,
-                    text = "BACK"
+                    text = "BACK",
                 )
             }
         }
-
     }
 
     @Composable
     fun setAnswerView() {
-        var currState by remember { mutableIntStateOf(0) }
+        var currState by remember { mutableIntStateOf(0) }//запоминает на какой вопрос сейчас отвечает пользователь по списку
         var currQuestion by remember { mutableStateOf(questionList[currState]) }
         var textEditValue by remember { mutableStateOf(TextFieldValue("")) }
         Row(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .padding(10.dp)
-                .padding(top = 80.dp)
-                .border(2.dp, Color.Black, shape = RoundedCornerShape(5.dp))
-                .height(60.dp),
-
+            modifier =
+                Modifier.Companion
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .padding(top = 80.dp)
+                    .border(2.dp, Color.Black, shape = RoundedCornerShape(5.dp))
+                    .height(60.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
             Text(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .offset(y = 18.dp),
+                modifier =
+                    Modifier.Companion
+                        .fillMaxWidth()
+                        .offset(y = 18.dp),
                 text = "Answers to reset the lock",
                 fontSize = 22.sp,
-                textAlign = TextAlign.Center
-
+                textAlign = TextAlign.Center,
             )
         }
         Column(
-            modifier = Modifier.Companion
-                .fillMaxSize()
-                .padding(20.dp),
+            modifier =
+                Modifier.Companion
+                    .fillMaxSize()
+                    .padding(20.dp),
             verticalArrangement = Arrangement.Center,
-
-            ) {
+        ) {
             Text(
-                modifier = Modifier.Companion
-                    .padding(top = 30.dp, bottom = 20.dp)
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier.Companion
+                        .padding(top = 30.dp, bottom = 20.dp)
+                        .fillMaxWidth(),
                 text = currQuestion,
                 fontSize = 16.sp,
             )
             Row(
                 modifier = Modifier.Companion.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 TextField(
-                    modifier = Modifier.Companion
-                        .fillMaxWidth()
-                        .background(Color.Companion.White)
-                        .border(width = 1.dp, color = Color.Companion.Black),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.LightGray,
-                        unfocusedContainerColor = Color.LightGray,
-                        disabledContainerColor = Color.Gray,
-                        errorContainerColor = Color.Red.copy(alpha = 0.1f)
-                    ),
-
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxWidth()
+                            .background(Color.Companion.White)
+                            .border(width = 1.dp, color = Color.Companion.Black),
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            disabledContainerColor = Color.Gray,
+                            errorContainerColor = Color.Red.copy(alpha = 0.1f),
+                        ),
                     value = textEditValue,
                     onValueChange = {
                         textEditValue = it.copy(text = it.text.lowercase())
-
                     },
                     label = { Text(text = "Answer") },
                     placeholder = { Text(text = "Enter your answer") },
-
-
-                    )
+                )
             }
 
             Button(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .padding(top = 25.dp)
-                    .background(Color.Companion.White),
+                modifier =
+                    Modifier.Companion
+                        .fillMaxWidth()
+                        .padding(top = 25.dp)
+                        .background(Color.Companion.White),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Companion.White),
                 border = BorderStroke(2.dp, Color.Companion.Black),
                 onClick = {
-
-                    if (currState == questionList.size - 1) {
+                    if (currState == questionList.size - 1) {//если на все вопросы получены ответы
                         setResult(RESULT_OK)
                         questionEditor.putBoolean("isFirstLaunch", false).commit()
                         finish()
@@ -296,57 +305,62 @@ class QuestionActivity : ComponentActivity() {
                         if (textEditValue.text.isEmpty()) {
                             CustomToast.Companion.showErrorToast(
                                 baseContext,
-                                "The password can't be empty!"
+                                "The password can't be empty!",
                             )
                         } else {
-
-                            questionEditor.putString(
+                            questionEditor.putString( // добавляем вопрос и ответ в sharedPreferences
                                 questionList[currState],
-                                textEditValue.text
+                                textEditValue.text,
                             ).commit()
                             currState++
                             currQuestion = questionList[currState]
-                            textEditValue = if (questionSharedPreferences.contains(currQuestion)) {
-                                textEditValue.copy(
-                                    text = questionSharedPreferences.getString(
-                                        currQuestion,
-                                        ""
-                                    ).toString()
-                                )
-                            } else
-                                textEditValue.copy(text = "")
+                            textEditValue =
+                                if (questionSharedPreferences.contains(currQuestion)) {
+                                    textEditValue.copy(
+                                        text =
+                                            questionSharedPreferences.getString(
+                                                currQuestion,
+                                                "",
+                                            ).toString(),
+                                    )
+                                } else {
+                                    textEditValue.copy(text = "")
+                                }
                         }
                     }
-
-                }) {
+                },
+            ) {
                 Text(
                     color = Color.Companion.Black,
-                    text = if (currState < questionList.size - 1) "NEXT" else "DONE"
+                    text = if (currState < questionList.size - 1) "NEXT" else "DONE",
                 )
             }
         }
 
         var expanded by remember { mutableStateOf(false) }
         Row(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .size(50.dp)
-                .border(1.dp, color = Color.Companion.Black)
+            modifier =
+                Modifier.Companion
+                    .fillMaxWidth()
+                    .size(50.dp)
+                    .border(1.dp, color = Color.Companion.Black),
         ) {
             Box(modifier = Modifier.Companion.offset(x = 5.dp)) {
                 IconButton(modifier = Modifier.size(56.dp), onClick = { expanded = true }) {
                     Icon(
                         painter = painterResource(R.drawable.menu_icon),
-                        contentDescription = "menu_icon", modifier = Modifier.Companion.size(36.dp)
+                        contentDescription = "menu_icon",
+                        modifier = Modifier.Companion.size(36.dp),
                     )
                 }
 
                 DropdownMenu(
-                    modifier = Modifier.Companion
-                        .background(color = Color.Companion.White)
-                        .border(color = Color.Companion.Black, width = 1.dp),
+                    modifier =
+                        Modifier.Companion
+                            .background(color = Color.Companion.White)
+                            .border(color = Color.Companion.Black, width = 1.dp),
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     for (el in questionList) {
                         DropdownMenuItem(
@@ -356,18 +370,21 @@ class QuestionActivity : ComponentActivity() {
                                 textEditValue =
                                     if (questionSharedPreferences.contains(currQuestion)) {
                                         textEditValue.copy(
-                                            text = questionSharedPreferences.getString(
-                                                currQuestion,
-                                                ""
-                                            ).toString()
+                                            text =
+                                                questionSharedPreferences.getString(
+                                                    currQuestion,
+                                                    "",
+                                                ).toString(),
                                         )
-                                    } else
+                                    } else {
                                         textEditValue.copy(text = "")
+                                    }
                             },
-                            text = { Text(el) }
+                            text = { Text(el) },
                         )
-                        if (questionList.last() != el)
+                        if (questionList.last() != el) {
                             Divider(color = Color.Companion.Black)
+                        }
                     }
                 }
             }

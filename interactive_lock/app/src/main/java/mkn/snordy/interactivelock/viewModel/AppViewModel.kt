@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,36 +25,38 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import mkn.snordy.interactivelock.R
 import mkn.snordy.interactivelock.model.AppModel
-import androidx.core.content.edit
 
 class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferences) {
     var isSettingPassword = false
-
-
 
     val name
         get() = appModel.name
 
     fun runApp(isLockPassed: Boolean) {
         appModel.runApp(isLockPassed)
-        sharedPreferences.edit(commit = true) {
-            remove(appModel.packageName)
+        if (isLockPassed) {
+            sharedPreferences.edit(commit = true) {//как только заходим в приложение, уведомление считается прочитанным
+                remove(appModel.packageName)
+            }
         }
-
     }
 
-    fun setPassword(password: String, editor: SharedPreferences.Editor) {
+    fun setPassword(
+        password: String,
+        editor: SharedPreferences.Editor,
+    ) {
         appModel.setPassword(password, editor)
     }
 
     suspend fun runSetLockActivity(
         context: Context,
-        activityResultLauncher: ActivityResultLauncher<Intent>
+        activityResultLauncher: ActivityResultLauncher<Intent>,
     ) {
         appModel.runSetLockActivity(context, activityResultLauncher)
     }
@@ -65,11 +66,11 @@ class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferen
     fun drawApp(
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
-        setCurrentApp: (AppViewModel) -> Unit
+        setCurrentApp: (AppViewModel) -> Unit,
     ) {
         val hasNotification by remember {
             mutableStateOf(
-                sharedPreferences.getBoolean(appModel.packageName, false)
+                sharedPreferences.getBoolean(appModel.packageName, false),
             )
         }
 
@@ -79,14 +80,12 @@ class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferen
                     .combinedClickable(
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
-
                                 appModel.runBlockForResult(context, activityResultLauncher)
                             }
                             setCurrentApp(this)
                         },
                         onLongClick = {
                             CoroutineScope(Dispatchers.Main).launch {
-
                                 isSettingPassword = true
                                 appModel.runBlockForResult(context, activityResultLauncher)
                             }
@@ -95,23 +94,23 @@ class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferen
                     )
                     .size(48.dp),
         ) {
-
             Image(
-                painter = appModel.icon
-                    ?: painterResource(id = R.drawable.ic_launcher_foreground),
+                painter =
+                    appModel.icon
+                        ?: painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = appModel.name,
                 modifier = Modifier.size(48.dp),
             )
             if (hasNotification) {
                 Box(
-                    modifier = Modifier
-                        .size(15.dp)
-                        .clip(CircleShape)
-                        .background(Color.Red),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(15.dp)
+                            .clip(CircleShape)
+                            .background(Color.Red),
+                    contentAlignment = Alignment.Center,
                 ) {
                 }
-
             }
         }
 
@@ -122,6 +121,4 @@ class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferen
             textAlign = TextAlign.Center,
         )
     }
-
-
 }

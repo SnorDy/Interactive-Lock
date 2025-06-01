@@ -53,7 +53,7 @@ class VoiceActivity : ComponentActivity() {
         try {
             activityLockLauncher.launch(intent)
         } catch (e: Exception) {
-            CustomToast.showErrorToast(this," " +e.message)
+            CustomToast.showErrorToast(this, " " + e.message)
         }
     }
 }

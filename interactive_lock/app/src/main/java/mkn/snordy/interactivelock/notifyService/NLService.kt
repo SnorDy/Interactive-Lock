@@ -2,7 +2,6 @@ package mkn.snordy.interactivelock.notifyService
 
 import android.Manifest
 import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -17,35 +16,34 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
-class NLService : NotificationListenerService() {
+class NLService : NotificationListenerService() {//отвечает за прослушку уведомлений
     private val channelID = "channelID"
     private val isMyNotificationExtra = "is_my_notification"
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
 
-
     override fun onCreate() {
         super.onCreate()
         sharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)
         editor = sharedPreferences.edit()
-//        editor.clear().commit()
     }
+
     override fun onBind(intent: Intent): IBinder? {
         return super.onBind(intent)
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     @RequiresApi(Build.VERSION_CODES.Q)
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
+    override fun onNotificationPosted(sbn: StatusBarNotification) {//когда пришло уведомление
         Log.d("Msg", "Notification arrived ${sbn.packageName},${sbn.id},${sbn.key},${sbn.uid}")
-        if (isMyNotification(sbn)) {
+        if (isMyNotification(sbn)) {//если это уведомление моего приложения, то ничего не делаем
             Log.d("NLService", "Ignoring my notification")
             return
         }
-        if (!sharedPreferences.contains(sbn.packageName)){
-            editor.putBoolean(sbn.packageName,true).commit()
+        if (!sharedPreferences.contains(sbn.packageName)) {//если нет пометки, что у приложения есть новое уведомление
+            editor.putBoolean(sbn.packageName, true).commit()
         }
-        cancelNotification(sbn.key)
+        cancelNotification(sbn.key)//отменяем, чтобы уведомление не показывалось на экране
 //        createAndSendNotification(sbn)
     }
 
@@ -54,7 +52,7 @@ class NLService : NotificationListenerService() {
         return extras.getBoolean(isMyNotificationExtra, false)
     }
 
-    private fun createAndSendNotification(sbn: StatusBarNotification) {
+    private fun createAndSendNotification(sbn: StatusBarNotification) {//это пока не работет, но планируется перенаправлять уведомления, чтобы сделать их некликабельными
         val title = sbn.notification.extras.getString("android.title")
         val text = sbn.notification.extras.getString("android.text")
 

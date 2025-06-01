@@ -10,8 +10,11 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +40,7 @@ class TextLockActivity : ComponentActivity() {
     var isSetPassword = false
     var realPassword = ""
     var newPassword = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -59,22 +63,26 @@ class TextLockActivity : ComponentActivity() {
                 hideSystemUI(windowInsetsController)
             }
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(20.dp),
+                verticalArrangement = Arrangement.Center,
             ) {
-                var textEditValue by remember { mutableStateOf(TextFieldValue("")) };
-                TextField(modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .background(Color.Companion.White)
-                    .border(width = 1.dp, color = Color.Companion.Black),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.LightGray,
-                        unfocusedContainerColor = Color.LightGray,
-                        disabledContainerColor = Color.Gray,
-                        errorContainerColor = Color.Red.copy(alpha = 0.1f)
-                    ),
+                var textEditValue by remember { mutableStateOf(TextFieldValue("")) }
+                TextField(
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxWidth()
+                            .background(Color.Companion.White)
+                            .border(width = 1.dp, color = Color.Companion.Black),
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            disabledContainerColor = Color.Gray,
+                            errorContainerColor = Color.Red.copy(alpha = 0.1f),
+                        ),
                     value = textEditValue,
                     onValueChange = {
                         textEditValue = it.copy(text = it.text.lowercase())
@@ -82,30 +90,28 @@ class TextLockActivity : ComponentActivity() {
                     },
                     label = { Text(text = "Password") },
                     placeholder = { Text(text = "Enter the password") },
-                    visualTransformation = PasswordVisualTransformation()
-
-
-                    )
+                    visualTransformation = PasswordVisualTransformation(),
+                )
                 Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .background(Color.White),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                            .background(Color.White),
                     shape = RoundedCornerShape(5.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     border = BorderStroke(2.dp, Color.Black),
                     onClick = {
                         if (isSetPassword) {
                             if (newPassword.isEmpty()) {
-
                                 CustomToast.showErrorToast(
                                     baseContext,
-                                    "The password can't be empty!"
+                                    "The password can't be empty!",
                                 )
                             } else {
                                 setResult(
                                     RESULT_OK,
-                                    Intent().putExtra("password", "t$newPassword")
+                                    Intent().putExtra("password", "t$newPassword"),
                                 )
                                 finish()
                             }
@@ -115,10 +121,12 @@ class TextLockActivity : ComponentActivity() {
                         } else {
                             finish()
                         }
-                    }) { Text(color = Color.Black, text = "DONE") }
+                    },
+                ) { Text(color = Color.Black, text = "DONE") }
             }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.R)
     private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {
         windowController?.hide(WindowInsetsCompat.Type.systemBars())

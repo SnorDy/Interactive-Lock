@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +41,7 @@ class SetLockActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        activityResultLauncher =
+        activityResultLauncher =//если пароль был успешно установлен
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
                     val password = result.data?.getStringExtra("password")
@@ -50,7 +49,7 @@ class SetLockActivity : ComponentActivity() {
                         RESULT_OK,
                         Intent(baseContext, MainActivity::class.java).putExtra(
                             "password",
-                            password
+                            password,//возвращаем его в Main
                         ),
                     )
                     Log.i("MY_LOG", "Password is changed")
@@ -61,20 +60,20 @@ class SetLockActivity : ComponentActivity() {
             }
         var btnSize = 64
         setContent {
-
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(30.dp).padding(top = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(30.dp).padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Row(
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .border(3.dp, shape = RectangleShape, color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
-
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    Alignment.CenterVertically,
                 ) {
                     IconButton(
                         modifier = Modifier.size(btnSize.dp),
@@ -98,7 +97,8 @@ class SetLockActivity : ComponentActivity() {
                         Modifier
                             .fillMaxWidth()
                             .border(3.dp, shape = RectangleShape, color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    Alignment.CenterVertically,
                 ) {
                     IconButton(
                         modifier = Modifier.size(btnSize.dp),
@@ -112,8 +112,7 @@ class SetLockActivity : ComponentActivity() {
                             painter = painterResource(R.drawable.mic_icon),
                             contentDescription = "Mic icon",
                             modifier = Modifier.size(btnSize.dp),
-
-                            )
+                        )
                     }
                     Text("Voice Lock", fontSize = 18.sp)
                 }
@@ -122,12 +121,14 @@ class SetLockActivity : ComponentActivity() {
                         Modifier
                             .fillMaxWidth()
                             .border(3.dp, shape = RectangleShape, color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    Alignment.CenterVertically,
                 ) {
                     IconButton(
-                        modifier = Modifier
-                            .size(btnSize.dp)
-                            .offset(x = 5.dp),
+                        modifier =
+                            Modifier
+                                .size(btnSize.dp)
+                                .offset(x = 5.dp),
                         onClick = {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runTextLockForResult(baseContext, activityResultLauncher)
@@ -147,7 +148,8 @@ class SetLockActivity : ComponentActivity() {
                         Modifier
                             .fillMaxWidth()
                             .border(3.dp, shape = RectangleShape, color = Color.Black),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    Alignment.CenterVertically,
                 ) {
                     IconButton(
                         modifier = Modifier.size(btnSize.dp),
@@ -165,8 +167,6 @@ class SetLockActivity : ComponentActivity() {
                     }
                     Text("No Lock", fontSize = 18.sp)
                 }
-
-
             }
         }
     }
@@ -214,6 +214,4 @@ class SetLockActivity : ComponentActivity() {
             intent.putExtra("set", true)
             activityResultLauncher.launch(intent)
         }
-
-
 }

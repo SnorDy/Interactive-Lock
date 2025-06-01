@@ -6,18 +6,25 @@ import mkn.snordy.interactivelock.R
 
 class CustomToast {
     companion object {
-        fun showSuccessToast(context: Context,text: String){
-        Toasty.custom(
-            context,
-            text,
-            R.drawable.success_icon,
-            es.dmoral.toasty.R.color.successColor,
-            2000,
-            true,
-            true
-        ).show()
+        fun showSuccessToast(
+            context: Context,
+            text: String,
+        ) {
+            Toasty.custom(
+                context,
+                text,
+                R.drawable.success_icon,
+                es.dmoral.toasty.R.color.successColor,
+                2000,
+                true,
+                true,
+            ).show()
         }
-        fun showErrorToast(context: Context,text:String){
+
+        fun showErrorToast(
+            context: Context,
+            text: String,
+        ) {
             Toasty.custom(
                 context,
                 text,
@@ -25,10 +32,14 @@ class CustomToast {
                 es.dmoral.toasty.R.color.errorColor,
                 2000,
                 true,
-                true
+                true,
             ).show()
         }
-        fun showInfoToast(context:Context,text:String){
+
+        fun showInfoToast(
+            context: Context,
+            text: String,
+        ) {
             Toasty.custom(
                 context,
                 text,
@@ -36,7 +47,7 @@ class CustomToast {
                 R.color.teal_700,
                 1000,
                 true,
-                true
+                true,
             ).show()
         }
     }

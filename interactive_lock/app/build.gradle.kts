@@ -5,7 +5,6 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
 }
 
-
 ktlint {
     android = true
 }
@@ -22,8 +21,8 @@ android {
         applicationId = "mkn.snordy.interactivelock"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,9 +46,7 @@ android {
     buildFeatures {
         compose = true
     }
-
 }
-
 
 dependencies {
     implementation("com.github.GrenderG:Toasty:1.5.2")
