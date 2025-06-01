@@ -88,44 +88,57 @@ class MainActivity : ComponentActivity() {
         if (!isDefaultLauncher()) {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
         } else {
-            sharedPreferences = getSharedPreferences("AppLocks", MODE_PRIVATE) //хранит типы блокировок для каждого приложения
-            questionSharedPreferences = getSharedPreferences("ResetQuestion", MODE_PRIVATE)//хранит контрольные вопросы с ответами для сброса блокировок
-            notifySharedPreferences = getSharedPreferences("Notification", MODE_PRIVATE)//хранит приложение и флаг true если пришло уведомление
+            sharedPreferences =
+                getSharedPreferences(
+                    "AppLocks",
+                    MODE_PRIVATE,
+                ) // хранит типы блокировок для каждого приложения
+            questionSharedPreferences =
+                getSharedPreferences(
+                    "ResetQuestion",
+                    MODE_PRIVATE,
+                ) // хранит контрольные вопросы с ответами для сброса блокировок
+            notifySharedPreferences =
+                getSharedPreferences(
+                    "Notification",
+                    MODE_PRIVATE,
+                ) // хранит приложение и флаг true если пришло уведомление
             editor = sharedPreferences.edit()
             notifyEditor = notifySharedPreferences.edit()
 
-            if (!questionSharedPreferences.contains("isFirstLaunch")) {//если запуск первый
+            if (!questionSharedPreferences.contains("isFirstLaunch")) { // если запуск первый
                 var intent =
                     Intent(
                         baseContext,
                         QuestionActivity::class.java,
                     )
-                startActivity(intent)//запускаем активность с контрольными вопросами
+                startActivity(intent) // запускаем активность с контрольными вопросами
             }
 
             enableEdgeToEdge()
-            activityResultLauncher =//отслеживает была ли блокировка пройдена успешно
+            activityResultLauncher = // отслеживает была ли блокировка пройдена успешно
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    if (result.resultCode == RESULT_OK) {//если да
-                        if (currentAppViewModel.isSettingPassword) {//если текущее приложение в режиме установки пароля
+                    if (result.resultCode == RESULT_OK) { // если да
+                        if (currentAppViewModel.isSettingPassword) { // если текущее приложение в режиме установки пароля
                             CoroutineScope(Dispatchers.Main)
                                 .launch {
-                                    currentAppViewModel.runSetLockActivity(//запускаем активность с выбором блокировки
+                                    currentAppViewModel.runSetLockActivity(
+// запускаем активность с выбором блокировки
                                         currentContext,
                                         setPasswordLauncher,
                                     )
                                 }
                             currentAppViewModel.isSettingPassword = false
-                        } else {//если нет, то запускаем приложение с флагом, что блокировка пройдена
+                        } else { // если нет, то запускаем приложение с флагом, что блокировка пройдена
                             currentAppViewModel.runApp(true)
                             Log.i("MY_LOG", "App is opened")
                         }
                     } else {
-                        currentAppViewModel.runApp(false)//если нет, то передаем false, как знак, что блокировка не пройдена
+                        currentAppViewModel.runApp(false) // если нет, то передаем false, как знак, что блокировка не пройдена
                         Log.i("MY_LOG", "App opening is CANCELED!")
                     }
                 }
-            setPasswordLauncher =//отслеживает результат установки нового пароля
+            setPasswordLauncher = // отслеживает результат установки нового пароля
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                     if (result.resultCode == RESULT_OK) {
                         currentAppViewModel.setPassword(
@@ -149,7 +162,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun isDefaultLauncher(): Boolean {//проверка на то,что приложение главный экран по умочанию
+    private fun isDefaultLauncher(): Boolean { // проверка на то,что приложение главный экран по умочанию
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
         val resolveInfo = packageManager.resolveActivity(intent, 0)
@@ -161,7 +174,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
-    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) {//сокрытие navigation bar
+    private fun hideSystemUI(windowController: WindowInsetsControllerCompat?) { // сокрытие navigation bar
         windowController?.hide(WindowInsetsCompat.Type.systemBars())
         windowController?.hide(WindowInsetsCompat.Type.statusBars())
         windowController?.hide(WindowInsetsCompat.Type.navigationBars())
@@ -173,7 +186,7 @@ class MainActivity : ComponentActivity() {
         val context = LocalContext.current
         val view = LocalView.current
         val currentWindow = (view.context as? Activity)?.window
-        val windowInsetsController = //сокрытие navigation bar
+        val windowInsetsController = // сокрытие navigation bar
             remember(view) {
                 WindowCompat.getInsetsController(
                     currentWindow,
@@ -184,14 +197,19 @@ class MainActivity : ComponentActivity() {
             hideSystemUI(windowInsetsController)
         }
 
-        val packageManager = context.packageManager//объект, хранящий информацию о приложениях на устройстве
-        val intent = Intent(Intent.ACTION_MAIN, null)//указывает, что хотим запустить приложение
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)//ищем приложения, которые могут быть запущены с главного экрана
+        val packageManager =
+            context.packageManager // объект, хранящий информацию о приложениях на устройстве
+        val intent = Intent(Intent.ACTION_MAIN, null) // указывает, что хотим запустить приложение
+        intent.addCategory(Intent.CATEGORY_LAUNCHER) // ищем приложения, которые могут быть запущены с главного экрана
 
         val appList =
-            context.packageManager.queryIntentActivities(intent, 0)//получаем все приложения по интенту
+            context.packageManager.queryIntentActivities(
+                intent,
+                0,
+            ) // получаем все приложения по интенту
                 .filterNotNull().filter {
-                    it.activityInfo.loadLabel(packageManager).toString() != "Interactive Lock"//пропускаем свое
+                    it.activityInfo.loadLabel(packageManager)
+                        .toString() != "Interactive Lock" // пропускаем свое
                 }
                 .map {
                     AppModel(
@@ -296,7 +314,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun menuBar() {
         var currentTime by remember { mutableStateOf(getCurrentTime()) }
-        LaunchedEffect(key1 = true) {//запускаем 1 раз корутину, которая отвечает за сокрытие статус бара и обновления текущего времени
+        LaunchedEffect(key1 = true) { // запускаем 1 раз корутину, которая отвечает за сокрытие статус бара и обновления текущего времени
             while (true) {
                 delay(1000)
                 currentTime = getCurrentTime()

@@ -54,9 +54,9 @@ import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import mkn.snordy.interactivelock.ui.MainActivity
 import mkn.snordy.interactivelock.R
 import mkn.snordy.interactivelock.customToast.CustomToast
+import mkn.snordy.interactivelock.ui.MainActivity
 
 class QuestionActivity : ComponentActivity() {
     private lateinit var questionSharedPreferences: SharedPreferences
@@ -113,9 +113,9 @@ class QuestionActivity : ComponentActivity() {
                 hideSystemUI(windowInsetsController)
             }
             if (isReset) {
-                resetView()//если в режиме сброса
+                resetView() // если в режиме сброса
             } else {
-                setAnswerView()//если в режиме установки контрольных вопросов (первый запуск)
+                setAnswerView() // если в режиме установки контрольных вопросов (первый запуск)
             }
         }
     }
@@ -223,7 +223,8 @@ class QuestionActivity : ComponentActivity() {
 
     @Composable
     fun setAnswerView() {
-        var currState by remember { mutableIntStateOf(0) }//запоминает на какой вопрос сейчас отвечает пользователь по списку
+        // запоминает на какой вопрос сейчас отвечает пользователь по списку
+        var currState by remember { mutableIntStateOf(0) }
         var currQuestion by remember { mutableStateOf(questionList[currState]) }
         var textEditValue by remember { mutableStateOf(TextFieldValue("")) }
         Row(
@@ -297,7 +298,7 @@ class QuestionActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Companion.White),
                 border = BorderStroke(2.dp, Color.Companion.Black),
                 onClick = {
-                    if (currState == questionList.size - 1) {//если на все вопросы получены ответы
+                    if (currState == questionList.size - 1) { // если на все вопросы получены ответы
                         setResult(RESULT_OK)
                         questionEditor.putBoolean("isFirstLaunch", false).commit()
                         finish()
@@ -308,7 +309,8 @@ class QuestionActivity : ComponentActivity() {
                                 "The password can't be empty!",
                             )
                         } else {
-                            questionEditor.putString( // добавляем вопрос и ответ в sharedPreferences
+                            // добавляем вопрос и ответ в sharedPreferences
+                            questionEditor.putString(
                                 questionList[currState],
                                 textEditValue.text,
                             ).commit()

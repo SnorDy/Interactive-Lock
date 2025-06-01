@@ -16,7 +16,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
-class NLService : NotificationListenerService() {//отвечает за прослушку уведомлений
+class NLService : NotificationListenerService() { // отвечает за прослушку уведомлений
     private val channelID = "channelID"
     private val isMyNotificationExtra = "is_my_notification"
     private lateinit var sharedPreferences: SharedPreferences
@@ -34,16 +34,16 @@ class NLService : NotificationListenerService() {//отвечает за про�
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     @RequiresApi(Build.VERSION_CODES.Q)
-    override fun onNotificationPosted(sbn: StatusBarNotification) {//когда пришло уведомление
+    override fun onNotificationPosted(sbn: StatusBarNotification) { // когда пришло уведомление
         Log.d("Msg", "Notification arrived ${sbn.packageName},${sbn.id},${sbn.key},${sbn.uid}")
-        if (isMyNotification(sbn)) {//если это уведомление моего приложения, то ничего не делаем
+        if (isMyNotification(sbn)) { // если это уведомление моего приложения, то ничего не делаем
             Log.d("NLService", "Ignoring my notification")
             return
-        }
-        if (!sharedPreferences.contains(sbn.packageName)) {//если нет пометки, что у приложения есть новое уведомление
+        } // если нет пометки, что у приложения есть новое уведомление
+        if (!sharedPreferences.contains(sbn.packageName)) {
             editor.putBoolean(sbn.packageName, true).commit()
         }
-        cancelNotification(sbn.key)//отменяем, чтобы уведомление не показывалось на экране
+        cancelNotification(sbn.key) // отменяем, чтобы уведомление не показывалось на экране
 //        createAndSendNotification(sbn)
     }
 
@@ -52,7 +52,8 @@ class NLService : NotificationListenerService() {//отвечает за про�
         return extras.getBoolean(isMyNotificationExtra, false)
     }
 
-    private fun createAndSendNotification(sbn: StatusBarNotification) {//это пока не работет, но планируется перенаправлять уведомления, чтобы сделать их некликабельными
+    // это пока не работет, но планируется перенаправлять уведомления, чтобы сделать их некликабельными
+    private fun createAndSendNotification(sbn: StatusBarNotification) {
         val title = sbn.notification.extras.getString("android.title")
         val text = sbn.notification.extras.getString("android.text")
 
