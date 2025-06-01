@@ -32,8 +32,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import mkn.snordy.interactivelock.ui.MainActivity
 import mkn.snordy.interactivelock.R
+import mkn.snordy.interactivelock.ui.MainActivity
 
 class SetLockActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
@@ -41,15 +41,16 @@ class SetLockActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        activityResultLauncher =//если пароль был успешно установлен
+        activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
                     val password = result.data?.getStringExtra("password")
+                    // возвращаем его в Main
                     setResult(
                         RESULT_OK,
                         Intent(baseContext, MainActivity::class.java).putExtra(
                             "password",
-                            password,//возвращаем его в Main
+                            password,
                         ),
                     )
                     Log.i("MY_LOG", "Password is changed")

@@ -64,7 +64,7 @@ class BongoLockActivity : ComponentActivity() {
         enableEdgeToEdge()
         val intent = intent
         newPassword = ""
-        isSetPassword = intent.getBooleanExtra("set", false)//проверка на режим установки пароля
+        isSetPassword = intent.getBooleanExtra("set", false) // проверка на режим установки пароля
         realPassword = intent.getStringExtra("password").toString()
         setContent {
             val view = LocalView.current
@@ -110,16 +110,16 @@ class BongoLockActivity : ComponentActivity() {
                     .onGloballyPositioned { coordinates ->
                         width = coordinates.size.width.toFloat()
                     }
-                    .pointerInput(Unit) {//добавляет обработку ввода к Box
+                    .pointerInput(Unit) { // добавляет обработку ввода к Box
                         coroutineScope {
-                            mutex.withLock {//обработка свайпа вверх в отдельной корутине
+                            mutex.withLock { // обработка свайпа вверх в отдельной корутине
                                 detectVerticalDragGestures(
-                                    onDragEnd = {//если движение закончено, то добавляем цифру к паролю и ставим соответствующий флаг
+                                    onDragEnd = { // если движение закончено, то добавляем цифру к паролю и ставим соответствующий флаг
                                         onSwipe()
                                         isSwipeInProgress = false
                                     },
-                                    onVerticalDrag = { change, dragAmount -> //вызывается при каждом вертикальном свайпе
-                                        if (dragAmount < -50) {//если палец достаточно сильно протащили вверх
+                                    onVerticalDrag = { change, dragAmount -> // вызывается при каждом вертикальном свайпе
+                                        if (dragAmount < -50) { // если палец достаточно сильно протащили вверх
                                             isSwipeInProgress = true
                                             currentImage = swipeImage
                                             launch {
@@ -156,7 +156,6 @@ class BongoLockActivity : ComponentActivity() {
                                                 currentImage = baseImage
                                                 isLeftClickLaunched = false
                                             }
-
                                         } else if (!isLeftClickLaunched && !isRightClickLaunched && !isSwipeInProgress) {
                                             onRightClick()
                                             currentImage = rightImage
@@ -196,11 +195,13 @@ class BongoLockActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 border = BorderStroke(2.dp, Color.Black),
                 onClick = {
-                    if (isSetPassword) {//если в режиме установки пароля
-                        if (newPassword.isEmpty()) {//и пароль пустой
+                    if (isSetPassword) { // если в режиме установки пароля
+                        if (newPassword.isEmpty()) { // и пароль пустой
                             CustomToast.showErrorToast(baseContext, "The password can't be empty!")
                         } else {
-                            setResult(//если пароль установлен, то возвращаем ОК и к интенту добавляем пароль, первый символ означает тип блокировки
+                            // если пароль установлен, то возвращаем ОК
+                            // и к интенту добавляем пароль, первый символ - тип блокировки
+                            setResult(
                                 RESULT_OK,
                                 Intent().putExtra("password", "b$newPassword"),
                             )

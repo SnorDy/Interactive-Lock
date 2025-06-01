@@ -6,10 +6,8 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.content.pm.PackageManager
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
-import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mkn.snordy.interactivelock.customToast.CustomToast
 import mkn.snordy.interactivelock.locks.BongoLockActivity
@@ -26,7 +24,8 @@ enum class LockType {
     NONE,
 }
 
-class AppModel( //класс, описывающий приложение
+// класс, описывающий приложение
+class AppModel(
     val name: String,
     val icon: Painter?,
     val packageName: String,
@@ -39,10 +38,10 @@ class AppModel( //класс, описывающий приложение
     private val packageManager = packageM
 
     init {
-        if (sharedPreferences.contains(packageName)) {//если для приложения была установлена блокировка
+        if (sharedPreferences.contains(packageName)) { // если была установлена блокировка
             var data = sharedPreferences.getString(packageName, "").toString()
-            stringPassword = data.substring(1)//получаем пароль
-            when (data[0]) {//первый символ указывает на тип блокировки
+            stringPassword = data.substring(1) // получаем пароль
+            when (data[0]) { // первый символ указывает на тип блокировки
                 'v' -> lockType = LockType.VOICE
                 'b' -> lockType = LockType.BONGO
                 'p' -> lockType = LockType.PASSWORD
@@ -72,7 +71,8 @@ class AppModel( //класс, описывающий приложение
         editor.apply()
     }
 
-    suspend fun runBlockForResult(//запуск соответствующей блокировки при попытке открыть приложение
+    // запуск соответствующей блокировки при попытке открыть приложение
+    suspend fun runBlockForResult(
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ): Boolean =
@@ -101,8 +101,11 @@ class AppModel( //класс, описывающий приложение
         }
 
     fun runApp(isLockPassed: Boolean) {
-        if (isLockPassed) {//если блокировка пройдена
-            val launchIntent: Intent? = packageManager.getLaunchIntentForPackage(packageName)//получаем интент для запуска текущего приложения
+        if (isLockPassed) { // если блокировка пройдена
+            val launchIntent: Intent? =
+                packageManager.getLaunchIntentForPackage(
+                    packageName,
+                ) // получаем интент для запуска текущего приложения
             if (launchIntent != null) {
                 try {
                     context.startActivity(launchIntent)

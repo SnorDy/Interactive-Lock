@@ -41,7 +41,7 @@ class AppViewModel(val appModel: AppModel, val sharedPreferences: SharedPreferen
     fun runApp(isLockPassed: Boolean) {
         appModel.runApp(isLockPassed)
         if (isLockPassed) {
-            sharedPreferences.edit(commit = true) {//как только заходим в приложение, уведомление считается прочитанным
+            sharedPreferences.edit(commit = true) { // как только заходим в приложение, уведомление считается прочитанным
                 remove(appModel.packageName)
             }
         }
