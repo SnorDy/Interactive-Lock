@@ -34,7 +34,7 @@
 1.  Клонируйте репозиторий:
 
     ```bash
-    git clone https://github.com/ваш-логин/interactive-lock.git
+    git clone https://github.com/SnorDy/Interactive-Lock
     ```
 
 2.  Откройте проект в Android Studio.
