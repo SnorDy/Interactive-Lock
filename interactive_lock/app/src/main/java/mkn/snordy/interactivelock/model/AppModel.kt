@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.ui.graphics.painter.Painter
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -54,6 +53,8 @@ class AppModel(
     override fun toString(): String {
         return name
     }
+
+    fun getLockType(): LockType = lockType
 
     fun setPassword(
         newPassword: String,
@@ -110,11 +111,9 @@ class AppModel(
                 try {
                     context.startActivity(launchIntent)
                 } catch (e: Exception) {
-                    Log.e("LaunchApp", "Error launching app: ${e.message}")
                     CustomToast.showErrorToast(context, "Failed to launch app.")
                 }
             } else {
-                Log.e("LaunchApp", "App not found with package: $packageName")
                 CustomToast.showErrorToast(context, "App not found.")
             }
         } else {

@@ -169,7 +169,7 @@ class MainActivity : ComponentActivity() {
         return resolveInfo?.activityInfo?.packageName == packageName
     }
 
-    fun setCurrentApp(currApp: AppViewModel) {
+    private fun setCurrentApp(currApp: AppViewModel) {
         currentAppViewModel = currApp
     }
 
@@ -356,7 +356,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun drawApps(
         appList: List<AppView>,
-        modifier: Modifier = Modifier.Companion,
+        modifier: Modifier = Modifier,
         activityResultLauncher: ActivityResultLauncher<Intent>,
     ) {
         val context = LocalContext.current
